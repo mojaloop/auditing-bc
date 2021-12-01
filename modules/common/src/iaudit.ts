@@ -23,34 +23,17 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Coil
- - Donovan Changfoot <donovan.changfoot@coil.com>
-
- * Crosslake
- - Pedro Sousa Barreto <pedrob@crosslaketech.com>
-
- * ModusBox
- - Miguel de Barros <miguel.debarros@modusbox.com>
- - Roman Pietrzak <roman.pietrzak@modusbox.com>
+ - Jason Bruwer <jason.bruwer@coil.com>
 
  --------------
 ******/
 
 'use strict'
 
-export type ILogger = {
-  // trace(...anything);
+export type IAudit = {
+  // methods to confirm auditing is enabled
+  isAuditEnabled: () => boolean
 
-  // methods to check debug level
-  isDebugEnabled: () => boolean
-  isInfoEnabled: () => boolean
-  isWarnEnabled: () => boolean
-  isErrorEnabled: () => boolean
-  isFatalEnabled: () => boolean
-
-  // methods to handle logging per level
-  debug: (message?: any, ...optionalParams: any[]) => void
-  info: (message?: any, ...optionalParams: any[]) => void
-  warn: (message?: any, ...optionalParams: any[]) => void
-  error: (message?: any, ...optionalParams: any[]) => void
-  fatal: (message?: any, ...optionalParams: any[]) => void
+  // methods to handle audit events per level
+  audit: (message?: any, ...optionalParams: any[]) => void
 }

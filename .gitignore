@@ -115,3 +115,7 @@ devspace*
 
 # General Ignore
 *IGNORE*
+
+# IntelliJ
+*.iml
+.idea

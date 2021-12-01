@@ -1,6 +1,6 @@
 'use strict'
 
-import { ILogger } from './ilogger'
+import { IAudit } from './iaudit'
 
-export default ILogger
-export { ILogger }
+export default IAudit
+export { IAudit }

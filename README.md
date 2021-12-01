@@ -1,21 +1,23 @@
-# logging-bc
+# auditing-bc
 
-**EXPERIMENTAL** vNext Logging Bounded Context Mono Repository
+**EXPERIMENTAL** vNext Auditing Bounded Context Mono Repository
 
 {{DESCRIPTION}}
 
 ## Modules
 
-### logging-svc
+### auditing-client-lib
+### auditing-svc (`TODO`)
 
 {{DESCRIPTION}}
 
-[README](./modules/logging-svc/README.md)
+[README](./modules/common/README.md)
+[README](./modules/auditing-client-lib/README.md)
 
 #### Run
 
 ```bash
-yarn start:logging-svc
+yarn start:auditing-svc
 ```
 
 ## Usage
@@ -32,7 +34,8 @@ nvm use
 ### Install Yarn
 
 ```bash
-npm -g yarn
+npm install --global yarn
+npm -g yarn `(//TODO not working, remove)`
 ```
 
 ### Install Dependencies

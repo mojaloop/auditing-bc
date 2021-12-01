@@ -1477,9 +1477,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mojaloop/logging-bc-common@workspace:modules/common":
+"@mojaloop/auditing-bc-auditing-client-lib@workspace:modules/auditing-client-lib":
   version: 0.0.0-use.local
-  resolution: "@mojaloop/logging-bc-common@workspace:modules/common"
+  resolution: "@mojaloop/auditing-bc-auditing-client-lib@workspace:modules/auditing-client-lib"
   dependencies:
     "@types/dotenv": ^8.2.0
     "@types/jest": ^27.0.3
@@ -1508,40 +1508,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mojaloop/logging-bc-logging-client-lib@workspace:modules/logging-client-lib":
+"@mojaloop/auditing-bc-common@workspace:modules/common":
   version: 0.0.0-use.local
-  resolution: "@mojaloop/logging-bc-logging-client-lib@workspace:modules/logging-client-lib"
-  dependencies:
-    "@types/dotenv": ^8.2.0
-    "@types/jest": ^27.0.3
-    "@types/node": ^16.11.9
-    "@types/node-cache": ^4.2.5
-    "@typescript-eslint/eslint-plugin": ^5.4.0
-    commander: ^8.3.0
-    dotenv: ^10.0.0
-    eslint: ^8.3.0
-    eslint-config-prettier: ^8.3.0
-    eslint-config-standard-with-typescript: ^21.0.1
-    eslint-plugin-import: ^2.25.3
-    eslint-plugin-node: ^11.1.0
-    eslint-plugin-promise: ^5.1.1
-    eslint-plugin-standard: ^5.0.0
-    faucet: 0.0.1
-    jest: ^27.3.1
-    jest-junit: ^13.0.0
-    npm-audit-resolver: ^2.3.1
-    npm-check-updates: ^12.0.2
-    nyc: ^15.1.0
-    pre-commit: ^1.2.2
-    ts-jest: ^27.0.7
-    typedoc: ^0.22.9
-    typescript: ^4.5.0
-  languageName: unknown
-  linkType: soft
-
-"@mojaloop/logging-bc-logging-svc@workspace:modules/logging-svc":
-  version: 0.0.0-use.local
-  resolution: "@mojaloop/logging-bc-logging-svc@workspace:modules/logging-svc"
+  resolution: "@mojaloop/auditing-bc-common@workspace:modules/common"
   dependencies:
     "@types/dotenv": ^8.2.0
     "@types/jest": ^27.0.3

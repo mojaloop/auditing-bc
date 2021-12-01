@@ -23,34 +23,26 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Coil
- - Donovan Changfoot <donovan.changfoot@coil.com>
-
- * Crosslake
- - Pedro Sousa Barreto <pedrob@crosslaketech.com>
-
- * ModusBox
- - Miguel de Barros <miguel.debarros@modusbox.com>
- - Roman Pietrzak <roman.pietrzak@modusbox.com>
+ - Jason Bruwer <jason.bruwer@coil.com>
 
  --------------
 ******/
 
 'use strict'
 
-export type ILogger = {
-  // trace(...anything);
+/* eslint-disable no-console */
 
-  // methods to check debug level
-  isDebugEnabled: () => boolean
-  isInfoEnabled: () => boolean
-  isWarnEnabled: () => boolean
-  isErrorEnabled: () => boolean
-  isFatalEnabled: () => boolean
+import { IAudit } from '@mojaloop/auditing-bc-common'
 
-  // methods to handle logging per level
-  debug: (message?: any, ...optionalParams: any[]) => void
-  info: (message?: any, ...optionalParams: any[]) => void
-  warn: (message?: any, ...optionalParams: any[]) => void
-  error: (message?: any, ...optionalParams: any[]) => void
-  fatal: (message?: any, ...optionalParams: any[]) => void
+export class ConsoleAudit implements IAudit {
+  private readonly _logger: any
+
+  isAuditEnabled (): boolean {
+    return true
+  }
+
+  audit (message?: any, ...optional: any[]): void {
+    // @ts-expect-error
+    console.log.apply(this, arguments)
+  }
 }

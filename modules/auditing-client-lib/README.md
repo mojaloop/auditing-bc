@@ -1,4 +1,4 @@
-# logging common types 
+# logging-client-lib
 
 [![Git Commit](https://img.shields.io/github/last-commit/mojaloop/auditing-bc.svg?style=flat)](https://github.com/mojaloop/auditing-bc/commits/master)
 [![Git Releases](https://img.shields.io/github/release/mojaloop/auditing-bc.svg?style=flat)](https://github.com/mojaloop/auditing-bc/releases)
@@ -6,7 +6,7 @@
 [![NPM Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/@mojaloop/auditing-bc.svg?style=flat)](https://www.npmjs.com/package/@mojaloop-poc/auditing-bc)
 [![CircleCI](https://circleci.com/gh/mojaloop/auditing-bc.svg?style=svg)](https://circleci.com/gh/mojaloop/auditing-bc)
 
-Mojaloop Logging Common Types
+Mojaloop Logging Service's Client Lib
 
 ## Usage
 

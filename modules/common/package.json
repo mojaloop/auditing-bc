@@ -1,14 +1,14 @@
 {
-  "name": "@mojaloop/logging-bc-common",
+  "name": "@mojaloop/auditing-bc-common",
   "version": "0.0.1",
-  "description": "mojaloop logging common types",
+  "description": "mojaloop auditing common types",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/mojaloop/logging-bc/tree/main/modules/logging-svc",
+  "homepage": "https://github.com/mojaloop/logging-bc/tree/main/modules/auditing-svc",
   "bugs": {
-    "url": "https://github.com/mojaloop/logging-bc/issues#readme"
+    "url": "https://github.com/mojaloop/auditing-bc/issues#readme"
   },
   "contributors": [
-    "Miguel de Barros <miguel.debarros@modusbox.com>"
+    "Jason Bruwer <jason.bruwer@coil.com>"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
