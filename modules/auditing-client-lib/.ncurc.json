@@ -1,6 +1,5 @@
 {
   "reject": [
-    "typescript",
-    "@mojaloop/auditing-bc-common"
+    "typescript"
   ]
 }

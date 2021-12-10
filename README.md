@@ -7,12 +7,10 @@
 ## Modules
 
 ### auditing-client-lib
-### auditing-svc (`TODO`)
 
 {{DESCRIPTION}}
 
-[README](./modules/common/README.md)
-[README](./modules/auditing-client-lib/README.md)
+[README](modules/auditing-client-lib/README.md)
 
 #### Run
 

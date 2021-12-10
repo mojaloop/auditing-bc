@@ -30,19 +30,60 @@
 
 'use strict'
 
-/* eslint-disable no-console */
+export declare type SecurityContext = {
+  token: string
+  role: string
+}
 
-import { IAudit } from '@mojaloop/auditing-bc-common'
+export declare enum ActionType {
+  participants_lifecycle_bc,
+  transfer_bc = 1,
+  settlement_bc,
+  accounts_and_balances_bc
+}
 
-export class ConsoleAudit implements IAudit {
-  private readonly _logger: any
+export declare type MetaTrackingInfo = {
+  traceId: string
+  parentId: string
+  spanId: string
+}
 
-  isAuditEnabled (): boolean {
-    return true
-  }
+export declare type AuditEntryLabel = {
+  key: string
+  value: string
+  encryptionKeyId: string
+}
 
-  audit (message?: any, ...optional: any[]): void {
-    // @ts-expect-error
-    console.log.apply(this, arguments)
-  }
+export declare type AuditEntry = {
+  id: bigint
+  originalTimestamp: bigint
+  persistenceTimestamp: bigint
+  functionTransaction: string
+  sourceBCSystemId: string
+  sourceBCId: string
+  sourceBCSignature: Buffer
+  sourceBCKeyId: string
+  sourceBCNetworkIdentifiers: string[]
+  securityContext: SecurityContext[]
+  actionType: ActionType
+  success: boolean
+  metaTrackingInfo: MetaTrackingInfo[]
+  labels: AuditEntryLabel[]
+}
+
+export type IAudit = {
+  // methods to confirm auditing is enabled
+  isAuditEnabled: () => boolean
+
+  // methods to handle audit
+  audit: (auditEntries: AuditEntry[]) => void
+
+  // retrieving audit entries
+  getAuditEntriesBy: (
+      fromDate: bigint,
+      toDate: bigint,
+      actionTypes: ActionType[],
+      offset: bigint,
+      limit: number
+  ) => AuditEntry[]
 }
