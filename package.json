@@ -9,7 +9,7 @@
     "url": "https://github.com/mojaloop/auditing-bc/issues#readme"
   },
   "contributors": [
-    "Miguel de Barros <miguel.debarros@modusbox.com>"
+    "Jason Bruwer <jason.bruwer@coil.com>"
   ],
   "scripts": {
     "prepare": "husky install",

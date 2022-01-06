@@ -1,6 +1,4 @@
 'use strict'
 
-import { IAudit } from './iaudit'
-
-export default IAudit
-export { IAudit }
+const message: string = 'Hello, World!'
+console.log(message) // eslint-disable-line no-console

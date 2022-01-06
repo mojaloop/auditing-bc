@@ -6,10 +6,12 @@
 
 ## Modules
 
+### auditing-types-lib
 ### auditing-client-lib
 
 {{DESCRIPTION}}
 
+[README](modules/auditing-types-lib/README.md)
 [README](modules/auditing-client-lib/README.md)
 
 #### Run
