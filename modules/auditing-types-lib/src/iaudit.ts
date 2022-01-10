@@ -37,7 +37,7 @@ export declare type SecurityContext = {
 
 export declare enum ActionType {
   participants_lifecycle_bc,
-  transfer_bc = 1,
+  transfer_bc,
   settlement_bc,
   accounts_and_balances_bc
 }
