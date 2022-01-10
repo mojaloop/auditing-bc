@@ -35,13 +35,6 @@ export declare type SecurityContext = {
   role: string
 }
 
-export declare enum ActionType {
-  participants_lifecycle_bc,
-  transfer_bc,
-  settlement_bc,
-  accounts_and_balances_bc
-}
-
 export declare type MetaTrackingInfo = {
   traceId: string
   parentId: string
@@ -65,7 +58,7 @@ export declare type AuditEntry = {
   sourceBCKeyId: string
   sourceBCNetworkIdentifiers: string[]
   securityContext: SecurityContext[]
-  actionType: ActionType
+  actionType: string
   success: boolean
   metaTrackingInfo: MetaTrackingInfo[]
   labels: AuditEntryLabel[]
@@ -82,7 +75,7 @@ export type IAudit = {
   getAuditEntriesBy: (
       fromDate: bigint,
       toDate: bigint,
-      actionTypes: ActionType[],
+      actionTypes: string[],
       offset: bigint,
       limit: number
   ) => AuditEntry[]

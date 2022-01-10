@@ -39,7 +39,7 @@
 
 /* eslint-disable no-console */
 
-import { IAudit, ActionType, AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
+import { IAudit, AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
 
 export class ConsoleAuditor implements IAudit {
   // trace(...anything) {
@@ -58,7 +58,7 @@ export class ConsoleAuditor implements IAudit {
   getAuditEntriesBy (
       fromDate: bigint,
       toDate: bigint,
-      actionTypes: ActionType[],
+      actionTypes: string[],
       offset: bigint,
       limit: number
   ) : AuditEntry[] {
