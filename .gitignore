@@ -119,3 +119,6 @@ devspace*
 # IntelliJ
 *.iml
 .idea
+
+# Yarn
+yarn.lock
