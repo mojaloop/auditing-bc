@@ -32,6 +32,7 @@
     "lint": "yarn run build && npx eslint ./src",
     "lint:fix": "yarn run build && npx eslint ./src --fix",
     "test:unit": "jest --passWithNoTests --testMatch '**/test/unit/**/*.test.ts'",
+    "test:integration": "jest --passWithNoTests --testMatch '**/test/integration/**/*.test.ts'",
     "test:coverage": "jest --passWithNoTests --coverage --coverageThreshold='{}' --testMatch '**/test/unit/**/*.test.ts'",
     "test:coverage-check": "jest --coverage --testMatch '**/test/unit/**/*.test.ts'",
     "audit:resolve": "SHELL=sh resolve-audit",
@@ -40,12 +41,13 @@
     "dep:update": "yarn run ncu -u"
   },
   "dependencies": {
+    "@mojaloop/logging-bc-logging-client-lib": "^0.0.1",
+    "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "^0.0.2",
     "commander": "^8.3.0",
     "dotenv": "^10.0.0"
   },
   "devDependencies": {
-    "@mojaloop/platform-shared-lib-messaging-types-lib": "^0.0.1",
-    "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "^0.0.1",
+    "@mojaloop/platform-shared-lib-messaging-types-lib": "^0.0.2",
     "@types/dotenv": "^8.2.0",
     "@types/jest": "^27.0.3",
     "@types/node": "^16.11.9",

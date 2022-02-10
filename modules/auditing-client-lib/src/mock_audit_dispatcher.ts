@@ -23,61 +23,31 @@
  - Name Surname <name.surname@gatesfoundation.com>
 
  * Coil
- - Jason Bruwer <jason.bruwer@coil.com>
+ - Donovan Changfoot <donovan.changfoot@coil.com>
+
+ * Crosslake
+ - Pedro Sousa Barreto <pedrob@crosslaketech.com>
+
+ * ModusBox
+ - Miguel de Barros <miguel.debarros@modusbox.com>
+ - Roman Pietrzak <roman.pietrzak@modusbox.com>
 
  --------------
 ******/
 
 'use strict'
 
-import { IMessage } from '@mojaloop/platform-shared-lib-messaging-types-lib'
-import {IMessageHeader} from "@mojaloop/platform-shared-lib-messaging-types-lib/dist/internal_types";
+import { IAudit, AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
 
-export declare type SecurityContext = {
-  token: string
-  role: string
-}
+import {IAuditDispatcher} from "./audit_client";
 
-export declare type MetaTrackingInfo = {
-  traceId: string
-  parentId: string
-  spanId: string
-}
+export class MLConsoleAuditDispatcher implements IAuditDispatcher {
+  dispatch(entries: AuditEntry[]): Promise<void> {
+    console.log('hello : ' + entries)
+    return Promise.resolve(undefined);
+  }
 
-export declare type AuditEntryLabel = {
-  key: string
-  value: string
-  encryptionKeyId: string
-}
-
-export declare type AuditEntry = {
-  id: number
-  originalTimestamp: number
-  persistenceTimestamp: number
-  functionTransaction: string
-  sourceBCSystemId: string
-  sourceBCId: string
-  sourceBCSignature: Buffer
-  sourceBCKeyId: string
-  sourceBCNetworkIdentifiers: string[]
-  securityContext: SecurityContext[]
-  actionType: string
-  success: boolean
-  metaTrackingInfo: MetaTrackingInfo[]
-  labels: AuditEntryLabel[]
-}
-
-export type IAudit = {
-  // methods to handle audit
-  audit: (auditEntries: AuditEntry[]) => Promise<void>
-  destroy: () => Promise<void>
-
-  // retrieving audit entries
-  getAuditEntriesBy: (
-      fromDate: number,
-      toDate: number,
-      actionTypes: string[],
-      offset: number,
-      limit: number
-  ) => AuditEntry[]
+  destroy(): Promise<void> {
+    return Promise.resolve(undefined);
+  }
 }

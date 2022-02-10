@@ -47,6 +47,7 @@ yarn
 ## Build
 
 ```bash
+yarn install
 yarn build
 ```
 
@@ -57,8 +58,18 @@ yarn start
 ```
 
 ## Unit Tests
-
 ```bash
 yarn test:unit
+```
+
+## Integration Tests
+
+Ensure the Kafka `zookeeper` is running prior to running the integration tests;
+```shell
+docker run -d -p 2181:2181 -p 9092:9092 -e ADVERTISED_HOST=127.0.0.1 --name kafka -e NUM_PARTITIONS=8 johnnypark/kafka-zookeeper
+```
+
+```bash
+yarn test:integration
 ```
 

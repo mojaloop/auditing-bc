@@ -38,31 +38,44 @@
 'use strict'
 
 /* eslint-disable no-console */
+//yarn add --dev @mojaloop/platform-shared-lib-messaging-types-lib
+//yarn add --dev @mojaloop/platform-shared-lib-nodejs-kafka-client-lib
 
-import { IAudit, AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
+import { AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
+import { MLKafkaProducer, MLKafkaProducerOptions } from '@mojaloop/platform-shared-lib-nodejs-kafka-client-lib'
+import {ConsoleLogger} from "@mojaloop/logging-bc-logging-client-lib";
 
-export class ConsoleAuditor implements IAudit {
-  // trace(...anything) {
-  //  console.trace.apply(this, anything);
-  // }
-  private readonly _auditor: any
+import {IAuditDispatcher} from "./audit_client";
 
-  isAuditEnabled (): boolean {
-    return true
+export class MLKafkaAuditDispatcher implements IAuditDispatcher {
+  kafkaProducer: MLKafkaProducer
+  kafkaTopic: string
+  logger: ConsoleLogger = new ConsoleLogger()
+
+  constructor(producerOptions: MLKafkaProducerOptions, kafkaTopic : string) {
+    this.kafkaProducer = new MLKafkaProducer(producerOptions, this.logger)
+    this.kafkaTopic = kafkaTopic
   }
 
-  audit (auditEntries: AuditEntry[]) : void {
-    //TODO Audit here...
+  start() : Promise<void>  {
+    return this.kafkaProducer.connect()
   }
 
-  getAuditEntriesBy (
-      fromDate: bigint,
-      toDate: bigint,
-      actionTypes: string[],
-      offset: bigint,
-      limit: number
-  ) : AuditEntry[] {
-    //TODO fetch here...
-    return []
+  async destroy() : Promise<void>  {
+    return this.kafkaProducer.destroy()
+  }
+
+  dispatch(entries: AuditEntry[]): Promise<void> {
+    for (let i = 0; i < entries.length; i++) {
+      this.kafkaProducer.send({
+        topic: this.kafkaTopic,
+        value: entries[i],
+        key: null,
+        headers: [
+          { key1: Buffer.from('testStr') }
+        ]
+      })
+    }
+    return Promise.resolve(undefined);
   }
 }

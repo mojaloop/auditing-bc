@@ -38,36 +38,37 @@
 'use strict'
 
 /* eslint-disable no-console */
-
-import { IAudit, AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
-import { MLKafkaProducer, MLKafkaProducerOptions } from '@mojaloop/platform-shared-lib-nodejs-kafka-client-lib'
-
 //yarn add --dev @mojaloop/platform-shared-lib-messaging-types-lib
 //yarn add --dev @mojaloop/platform-shared-lib-nodejs-kafka-client-lib
-import {IMessageProducer} from '@mojaloop/platform-shared-lib-messaging-types-lib'
 
-let kafkaProducer: MLKafkaProducer
-let producerOptions: MLKafkaProducerOptions
+import {AuditEntry, IAudit} from "@mojaloop/auditing-bc-auditing-types-lib";
+
+export interface IAuditDispatcher {
+  dispatch(entries: AuditEntry[]): Promise<void>
+  destroy(): Promise<void>
+}
 
 export class MLAuditClient implements IAudit {
-  // trace(...anything) {
-  //  console.trace.apply(this, anything);
-  // }
   private readonly _auditor: any
+  private dispatcher : IAuditDispatcher;
 
-  isAuditEnabled (): boolean {
-    return true
+  constructor(dispatcher : IAuditDispatcher) {
+    this.dispatcher = dispatcher;
   }
 
-  audit (auditEntries: AuditEntry[]) : void {
-    //TODO Audit here...
+  audit (auditEntries: AuditEntry[]) : Promise<void> {
+    return this.dispatcher.dispatch(auditEntries)
+  }
+
+  destroy () : Promise<void> {
+    return this.dispatcher.destroy()
   }
 
   getAuditEntriesBy (
-      fromDate: bigint,
-      toDate: bigint,
+      fromDate: number,
+      toDate: number,
       actionTypes: string[],
-      offset: bigint,
+      offset: number,
       limit: number
   ) : AuditEntry[] {
     //TODO fetch here...
