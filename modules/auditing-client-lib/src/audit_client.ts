@@ -41,15 +41,14 @@
 //yarn add --dev @mojaloop/platform-shared-lib-messaging-types-lib
 //yarn add --dev @mojaloop/platform-shared-lib-nodejs-kafka-client-lib
 
-import {AuditEntry, IAudit} from "@mojaloop/auditing-bc-auditing-types-lib";
+import {AuditEntry} from "@mojaloop/auditing-bc-auditing-types-lib";
 
 export interface IAuditDispatcher {
   dispatch(entries: AuditEntry[]): Promise<void>
   destroy(): Promise<void>
 }
 
-export class MLAuditClient implements IAudit {
-  private readonly _auditor: any
+export class MLAuditClient {
   private dispatcher : IAuditDispatcher;
 
   constructor(dispatcher : IAuditDispatcher) {

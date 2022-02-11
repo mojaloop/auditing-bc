@@ -37,7 +37,7 @@
 
 'use strict'
 
-import { IAudit, AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
+import { AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
 
 import {IAuditDispatcher} from "./audit_client";
 

@@ -1,11 +1,10 @@
 "use strict"
 
-import { IAudit, AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
-import { MLConsoleAuditDispatcher } from "../../src/mock_audit_dispatcher";
-import {MLKafkaAuditDispatcher} from "../../dist/kafka_audit_dispatcher";
-import {MLAuditClient} from "../../src/audit_client";
+import { AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
+import { MLConsoleAuditDispatcher } from "../../src/mock_audit_dispatcher"
+import { MLAuditClient } from "../../src/audit_client"
 
-let auditClient : IAudit;
+let auditClient : MLAuditClient
 
 const sampleAE: AuditEntry = {
   'id' : 1,

@@ -30,9 +30,6 @@
 
 'use strict'
 
-import { IMessage } from '@mojaloop/platform-shared-lib-messaging-types-lib'
-import {IMessageHeader} from "@mojaloop/platform-shared-lib-messaging-types-lib/dist/internal_types";
-
 export declare type SecurityContext = {
   token: string
   role: string
@@ -65,19 +62,4 @@ export declare type AuditEntry = {
   success: boolean
   metaTrackingInfo: MetaTrackingInfo[]
   labels: AuditEntryLabel[]
-}
-
-export type IAudit = {
-  // methods to handle audit
-  audit: (auditEntries: AuditEntry[]) => Promise<void>
-  destroy: () => Promise<void>
-
-  // retrieving audit entries
-  getAuditEntriesBy: (
-      fromDate: number,
-      toDate: number,
-      actionTypes: string[],
-      offset: number,
-      limit: number
-  ) => AuditEntry[]
 }

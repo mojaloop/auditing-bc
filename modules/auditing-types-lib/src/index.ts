@@ -1,6 +1,5 @@
 'use strict'
 
-import { IAudit, AuditEntry } from './iaudit'
+import { AuditEntry } from './audit'
 
-export default IAudit
-export { IAudit, AuditEntry }
+export { AuditEntry }

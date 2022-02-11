@@ -30,7 +30,7 @@
 
 'use strict'
 
-import { IAudit, AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
+import { AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
 import {
   MLKafkaProducerOptions,
   MLKafkaConsumer,
@@ -47,12 +47,11 @@ import {MLKafkaAuditDispatcher} from "../../dist/kafka_audit_dispatcher";
 
 const logger: ConsoleLogger = new ConsoleLogger()
 
-//let kafkaProducer: MLKafkaProducer
 let producerOptions: MLKafkaProducerOptions
 let kafkaConsumer: MLKafkaConsumer
 let consumerOptions: MLKafkaConsumerOptions
 
-let auditClient : IAudit;
+let auditClient : MLAuditClient;
 
 const TOPIC_NAME = 'nodejs-rdkafka-producer-integration-test-audit-bc-topic'
 
