@@ -1,9 +1,9 @@
 {
-  "name": "@mojaloop/auditing-client-lib",
+  "name": "@mojaloop/auditing-server",
   "version": "0.0.1",
-  "description": "Mojaloop auditing client library",
+  "description": "Mojaloop auditing server implementation",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/mojaloop/auditing-bc/tree/main/modules/auditing-client-lib",
+  "homepage": "https://github.com/mojaloop/auditing-bc/tree/main/modules/auditing-server",
   "bugs": {
     "url": "https://github.com/mojaloop/auditing-bc/issues#readme"
   },
