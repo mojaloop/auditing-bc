@@ -41,6 +41,7 @@
     "dep:update": "yarn run ncu -u"
   },
   "dependencies": {
+    "@mojaloop/auditing-bc-auditing-types-lib": "^0.0.1",
     "@mojaloop/logging-bc-logging-client-lib": "^0.0.1",
     "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "^0.0.2",
     "commander": "^8.3.0",

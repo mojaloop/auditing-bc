@@ -44,6 +44,22 @@ npm -g yarn `(//TODO not working, remove)`
 yarn
 ```
 
+If your release of yarn is not v3.x >, you will need to run the below command in order to enable v3.
+```bash
+yarn set version berry
+```
+   
+Ensure the version is > 3.x.x via:
+```bash
+yarn --version
+```
+
+Docker Image for Kafka
+```bash
+docker run -d -p 2181:2181 -p 9092:9092 -e ADVERTISED_HOST=127.0.0.1 --name kafka -e NUM_PARTITIONS=8 johnnypark/kafka-zookeeper
+```
+
+
 ## Build
 
 ```bash
