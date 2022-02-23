@@ -54,11 +54,23 @@ Ensure the version is > 3.x.x via:
 yarn --version
 ```
 
-Docker Image for Kafka
+#### Docker Image for Kafka
 ```bash
 docker run -d -p 2181:2181 -p 9092:9092 -e ADVERTISED_HOST=127.0.0.1 --name kafka -e NUM_PARTITIONS=8 johnnypark/kafka-zookeeper
 ```
 
+#### Docker Image for Kafka on Apple M1 Arch:
+> The steps below need to be taken in order to run the `kafka-zookeeper` on Apple M1 ARM processors;  
+1. Clone `https://github.com/hey-johnnypark/docker-kafka-zookeeper`
+2. Modify the `Dockerfile` root image to FROM `alpine:3.15.0` (previously `3.9.2`)
+3. Modify the build.sh to;
+```text
+docker build -t johnnypark/kafka-zookeeper:m1 --no-cache .
+```
+4. Run the following to start the image;
+```shell
+docker run -d -p 2181:2181 -p 9092:9092 -e ADVERTISED_HOST=127.0.0.1 --name kafka -e NUM_PARTITIONS=8 johnnypark/kafka-zookeeper:m1
+```
 
 ## Build
 
