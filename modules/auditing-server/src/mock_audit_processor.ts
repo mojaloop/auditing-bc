@@ -30,40 +30,20 @@
 
 'use strict'
 
-/* eslint-disable no-console */
-//yarn add --dev @mojaloop/platform-shared-lib-messaging-types-lib
-//yarn add --dev @mojaloop/platform-shared-lib-nodejs-kafka-client-lib
+import { AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
 
-import {AuditEntry} from "@mojaloop/auditing-bc-auditing-types-lib";
+import {IAuditProcessor} from "./audit_server";
 
-export interface IAuditDispatcher {
-  dispatch(entries: AuditEntry[]): Promise<void>
-  destroy(): Promise<void>
-}
+export class MLConsoleAuditProcessor implements IAuditProcessor {
+  private entryCount : number = 0;
 
-export class MLAuditClient {
-  private dispatcher : IAuditDispatcher;
-
-  constructor(dispatcher : IAuditDispatcher) {
-    this.dispatcher = dispatcher;
+  storeAuditEntries(entries: AuditEntry[]): Promise<void> {
+    this.entryCount += entries.length;
+    console.log('hello : ' + entries)
+    return Promise.resolve(undefined);
   }
 
-  audit (auditEntries: AuditEntry[]) : Promise<void> {
-    return this.dispatcher.dispatch(auditEntries)
-  }
-
-  destroy () : Promise<void> {
-    return this.dispatcher.destroy()
-  }
-
-  getAuditEntriesBy (
-      fromDate: number,
-      toDate: number,
-      actionTypes: string[],
-      offset: number,
-      limit: number
-  ) : AuditEntry[] {
-    //TODO fetch here...
-    return []
+  getEntryCount(): number {
+    return this.entryCount;
   }
 }

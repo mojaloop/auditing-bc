@@ -30,40 +30,40 @@
 
 'use strict'
 
-/* eslint-disable no-console */
-//yarn add --dev @mojaloop/platform-shared-lib-messaging-types-lib
-//yarn add --dev @mojaloop/platform-shared-lib-nodejs-kafka-client-lib
+import {IAuditConsumer} from "./audit_server";
+import {MLKafkaConsumerOptions} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib/dist/rdkafka_consumer";
+import {MLKafkaConsumer} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
+import {ILogger} from "@mojaloop/logging-bc-logging-client-lib";
+import {IMessage} from "@mojaloop/platform-shared-lib-messaging-types-lib";
 
-import {AuditEntry} from "@mojaloop/auditing-bc-auditing-types-lib";
+export class MLKafkaAuditConsumer implements IAuditConsumer {
+  private logger : ILogger;
+  private kafkaConsumer : MLKafkaConsumer;
+  private kafkaTopic : string;
+  private callbackFn : (message: IMessage) => Promise<void>;
 
-export interface IAuditDispatcher {
-  dispatch(entries: AuditEntry[]): Promise<void>
-  destroy(): Promise<void>
-}
-
-export class MLAuditClient {
-  private dispatcher : IAuditDispatcher;
-
-  constructor(dispatcher : IAuditDispatcher) {
-    this.dispatcher = dispatcher;
+  constructor(
+      options: MLKafkaConsumerOptions,
+      kafkaTopic : string,
+      logger: ILogger,
+      callback : (message: IMessage) => Promise<void>
+  ) {
+    this.logger = logger;
+    this.kafkaTopic = kafkaTopic;
+    this.callbackFn = callback;
+    this.kafkaConsumer = new MLKafkaConsumer(options, logger);
   }
 
-  audit (auditEntries: AuditEntry[]) : Promise<void> {
-    return this.dispatcher.dispatch(auditEntries)
+  async init(): Promise<void> {
+    this.kafkaConsumer.setCallbackFn(this.callbackFn)//TODO this needs to be better.
+    this.kafkaConsumer.setTopics([this.kafkaTopic])
+    await this.kafkaConsumer.connect()
+    await this.kafkaConsumer.start()
+
+    return Promise.resolve(undefined);
   }
 
-  destroy () : Promise<void> {
-    return this.dispatcher.destroy()
-  }
-
-  getAuditEntriesBy (
-      fromDate: number,
-      toDate: number,
-      actionTypes: string[],
-      offset: number,
-      limit: number
-  ) : AuditEntry[] {
-    //TODO fetch here...
-    return []
+  destroy(): Promise<void> {
+    return this.kafkaConsumer.destroy(false)
   }
 }

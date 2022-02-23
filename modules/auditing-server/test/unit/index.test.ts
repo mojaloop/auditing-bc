@@ -10,7 +10,7 @@ describe('example test', () => {
     // Cleanup
   })
 
-  test('Nodejs kafka clients require a kafka cluster, run the integration tests, no unit tests available', async () => {
+  test('Nodejs kafka server require a kafka cluster, run the integration tests, no unit tests available', async () => {
     await expect(true)
   })
 })

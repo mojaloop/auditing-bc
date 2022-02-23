@@ -30,40 +30,48 @@
 
 'use strict'
 
-/* eslint-disable no-console */
-//yarn add --dev @mojaloop/platform-shared-lib-messaging-types-lib
-//yarn add --dev @mojaloop/platform-shared-lib-nodejs-kafka-client-lib
-
 import {AuditEntry} from "@mojaloop/auditing-bc-auditing-types-lib";
+import {IMessage} from "@mojaloop/platform-shared-lib-messaging-types-lib";
+import {ConsoleLogger, ILogger} from "@mojaloop/logging-bc-logging-client-lib";
 
-export interface IAuditDispatcher {
-  dispatch(entries: AuditEntry[]): Promise<void>
+export interface IAuditProcessor {
+  storeAuditEntries(entries: AuditEntry[]): Promise<void>
+}
+
+export interface IAuditConsumer {
+  init(): Promise<void>
   destroy(): Promise<void>
 }
 
-export class MLAuditClient {
-  private dispatcher : IAuditDispatcher;
+export class MLAuditServer {
+  private processor : IAuditProcessor;
+  private consumer : IAuditConsumer;
+  private logger: ILogger;
 
-  constructor(dispatcher : IAuditDispatcher) {
-    this.dispatcher = dispatcher;
+  constructor(processor : IAuditProcessor, logger : ILogger) {
+    this.processor = processor;
+    this.logger = logger;
   }
 
-  audit (auditEntries: AuditEntry[]) : Promise<void> {
-    return this.dispatcher.dispatch(auditEntries)
+  init (consumer : IAuditConsumer) : Promise<void> {
+    this.consumer = consumer;
+    return this.consumer.init()
+  }
+
+  processAuditMessage (message: IMessage) : Promise<void> {
+    const value = message.value;
+    let auditEntries: AuditEntry[] = [];
+    if (typeof value == "string") {
+      auditEntries = JSON.parse(value);
+    } else {
+      this.logger.error('Unable to process value ['+value+'] of type ['+(typeof value)+'].');
+      return Promise.resolve(undefined);
+    }
+
+    return this.processor.storeAuditEntries(auditEntries);
   }
 
   destroy () : Promise<void> {
-    return this.dispatcher.destroy()
-  }
-
-  getAuditEntriesBy (
-      fromDate: number,
-      toDate: number,
-      actionTypes: string[],
-      offset: number,
-      limit: number
-  ) : AuditEntry[] {
-    //TODO fetch here...
-    return []
+    return this.consumer.destroy()
   }
 }
