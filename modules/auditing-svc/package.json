@@ -1,9 +1,9 @@
 {
-  "name": "@mojaloop/auditing-server",
+  "name": "@mojaloop/auditing-svc",
   "version": "0.0.1",
   "description": "Mojaloop auditing server implementation",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/mojaloop/auditing-bc/tree/main/modules/auditing-server",
+  "homepage": "https://github.com/mojaloop/auditing-bc/tree/main/modules/auditing-svc",
   "bugs": {
     "url": "https://github.com/mojaloop/auditing-bc/issues#readme"
   },
