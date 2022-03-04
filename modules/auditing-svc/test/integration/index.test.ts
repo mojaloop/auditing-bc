@@ -104,6 +104,7 @@ describe('nodejs-rdkafka-audit-bc', () => {
       outputType: MLKafkaConsumerOutputType.Json
     }
 
+    //TODO Move the AuditConsumer to the Processor.
     await auditServer.init(new MLKafkaAuditConsumer(
         consumerOptions,
         TOPIC_NAME,

@@ -34,6 +34,8 @@ import {AuditEntry} from "@mojaloop/auditing-bc-auditing-types-lib";
 import {IMessage} from "@mojaloop/platform-shared-lib-messaging-types-lib";
 import {ConsoleLogger, ILogger} from "@mojaloop/logging-bc-logging-client-lib";
 
+//TODO processor needs to be replaced by IStorage rather.
+//Since the engine/processor will not be dynamic.
 export interface IAuditProcessor {
   storeAuditEntries(entries: AuditEntry[]): Promise<void>
 }
