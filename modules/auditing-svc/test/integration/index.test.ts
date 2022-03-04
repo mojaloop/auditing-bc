@@ -41,7 +41,7 @@ import { ConsoleLogger } from "@mojaloop/logging-bc-logging-client-lib";
 
 import { MLAuditClient } from "../../../auditing-client-lib/src/audit_client";
 import {MLKafkaAuditDispatcher} from "../../../auditing-client-lib/src/kafka_audit_dispatcher";
-import {MLConsoleAuditStorage} from "../../src/infrastructure/mock_audit_storage";
+import {MLConsoleAuditStorage} from "../../src/infrastructure/console_audit_storage";
 import {MLAuditEventHandler} from "../../src/application/audit_event_handler";
 
 const logger: ConsoleLogger = new ConsoleLogger()
@@ -103,8 +103,10 @@ describe('nodejs-rdkafka-audit-bc', () => {
   test('produce and consume audit-bc using kafka', async () => {
     // Startup Handler
     await auditEvtHandler.init();
-    await auditClient.audit([sampleAE])
+    await auditClient.audit([sampleAE]);
 
-    await expect(consoleStorage.getEntryCount() > 0)
+    await new Promise(f => setTimeout(f, 1000));
+
+    expect(consoleStorage.getEntryCount()).toBeGreaterThan(0);
   })
 })

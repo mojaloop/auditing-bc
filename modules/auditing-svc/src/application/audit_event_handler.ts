@@ -38,6 +38,7 @@ import {MLKafkaConsumer, MLKafkaConsumerOptions} from "@mojaloop/platform-shared
 //Since the engine/processor will not be dynamic.
 export interface IStorage {
   store(entries: AuditEntry[]): Promise<void>
+  init () : Promise<void>
 }
 
 export class MLAuditEventHandler {
@@ -60,23 +61,27 @@ export class MLAuditEventHandler {
   }
 
   async init () : Promise<void> {
-    this.kafkaConsumer = new MLKafkaConsumer(this.consumerOpts, this.logger);
+    await this.storage.init()
 
-    this.kafkaConsumer.setCallbackFn(this.processAuditMessage);
+    this.kafkaConsumer = new MLKafkaConsumer(this.consumerOpts, this.logger);
+    this.kafkaConsumer.setCallbackFn(this.processAuditMessage.bind(this));
     this.kafkaConsumer.setTopics([this.kafkaTopic]);
     await this.kafkaConsumer.connect();
     return this.kafkaConsumer.start();
   }
 
-  processAuditMessage (message: IMessage) : Promise<void> {
+  async processAuditMessage (message: IMessage) : Promise<void> {
     const value = message.value;
+
     let auditEntries: AuditEntry[] = [];
-    if (typeof value == "string") {
-      auditEntries = JSON.parse(value);
+    if (typeof value == 'object') {
+      auditEntries.push(value as AuditEntry);
     } else {
       this.logger.error('Unable to process value ['+value+'] of type ['+(typeof value)+'].');
       return Promise.resolve(undefined);
     }
+
+    if (auditEntries == undefined || auditEntries.length == 0) return Promise.resolve(undefined);
 
     return this.storage.store(auditEntries);
   }

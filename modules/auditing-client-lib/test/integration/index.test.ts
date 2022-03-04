@@ -99,7 +99,6 @@ describe('nodejs-rdkafka-audit-bc', () => {
   })
 
   test('produce and consume audit-bc using kafka', async () => {
-
     let receivedMessages = 0;
     async function handleAuditMsg (message: IMessage): Promise<void> {
       receivedMessages++
@@ -114,6 +113,9 @@ describe('nodejs-rdkafka-audit-bc', () => {
 
     await auditClient.audit([sampleAE])
 
-    await expect(receivedMessages == 1)
+    // Wait 1 second to receive the event
+    await new Promise(f => setTimeout(f, 1000));
+
+    expect(receivedMessages).toEqual(1)
   })
 })

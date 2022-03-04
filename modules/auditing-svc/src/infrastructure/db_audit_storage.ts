@@ -35,6 +35,10 @@ import {IStorage} from "../application/audit_event_handler";
 
 export class MLDatabaseAuditStorage implements IStorage {
 
+  init(): Promise<void> {
+    return Promise.resolve(undefined);
+  }
+
   store(entries: AuditEntry[]): Promise<void> {
     //TODO Need to persist here...
     return Promise.resolve(undefined);
