@@ -33,7 +33,7 @@
 import {AuditEntry} from "@mojaloop/auditing-bc-auditing-types-lib";
 import {IMessage} from "@mojaloop/platform-shared-lib-messaging-types-lib";
 import {ConsoleLogger, ILogger} from "@mojaloop/logging-bc-logging-client-lib";
-import {MLKafkaEventHandler} from "./kafka_audit_consumer";
+import {MLKafkaEventHandler} from "./kafka_audit_evt_handler";
 import {MLKafkaConsumerOptions} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
 
 //Since the engine/processor will not be dynamic.
