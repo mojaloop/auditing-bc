@@ -30,16 +30,21 @@
 
 'use strict'
 
-import { AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
+import {AuditEntry} from '@mojaloop/auditing-bc-auditing-types-lib';
+import {IStorage} from "../application/audit_cmd_handler";
+import {ILogger} from "@mojaloop/logging-bc-logging-client-lib";
 
-import {IAuditProcessor} from "./audit_server";
-
-export class MLConsoleAuditProcessor implements IAuditProcessor {
+export class MLConsoleAuditStorage implements IStorage {
   private entryCount : number = 0;
+  private logger: ILogger;
 
-  storeAuditEntries(entries: AuditEntry[]): Promise<void> {
+  constructor(logger: ILogger) {
+    this.logger = logger;
+  }
+
+  store(entries: AuditEntry[]): Promise<void> {
     this.entryCount += entries.length;
-    console.log('hello : ' + entries)
+    this.logger.info('StoringAuditEntries : ' + entries)
     return Promise.resolve(undefined);
   }
 

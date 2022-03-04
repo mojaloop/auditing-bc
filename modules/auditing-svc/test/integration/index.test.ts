@@ -38,24 +38,22 @@ import {
   MLKafkaConsumerOutputType } from '@mojaloop/platform-shared-lib-nodejs-kafka-client-lib'
 
 import { ConsoleLogger } from "@mojaloop/logging-bc-logging-client-lib";
-import { IMessage } from '@mojaloop/platform-shared-lib-messaging-types-lib';
 
 import { MLAuditClient } from "../../../auditing-client-lib/src/audit_client";
 import {MLKafkaAuditDispatcher} from "../../../auditing-client-lib/src/kafka_audit_dispatcher";
-import {MLAuditServer} from "../../src/audit_server";
-import {MLKafkaAuditConsumer} from "../../src/kafka_audit_consumer";
-import {MLConsoleAuditProcessor} from "../../src/mock_audit_processor";
+import {MLConsoleAuditStorage} from "../../src/infrastructure/mock_audit_storage";
+import {MLAuditCommandHandler} from "../../src/application/audit_cmd_handler";
 
 const logger: ConsoleLogger = new ConsoleLogger()
 
-let producerOptions: MLKafkaProducerOptions
-let processor: MLConsoleAuditProcessor
+let producerOptions: MLKafkaProducerOptions 
 let consumerOptions: MLKafkaConsumerOptions
 
 let auditClient : MLAuditClient;
-let auditServer : MLAuditServer;
+let auditCmdHandler : MLAuditCommandHandler;
+let consoleStorage : MLConsoleAuditStorage;
 
-const TOPIC_NAME = 'nodejs-rdkafka-producer-integration-test-audit-bc-topic'
+const TOPIC_NAME = 'nodejs-rdkafka-svc-integration-test-audit-bc-topic'
 
 const sampleAE: AuditEntry = {
   'id' : 1,
@@ -86,34 +84,27 @@ describe('nodejs-rdkafka-audit-bc', () => {
     await dispatcher.start()
     auditClient = new MLAuditClient(dispatcher)
 
-    // Server
-    processor = new MLConsoleAuditProcessor();
-    auditServer = new MLAuditServer(processor, logger);
-  })
-
-  afterAll(async () => {
-    // Cleanup
-    await auditClient.destroy()
-    await auditServer.destroy()
-  })
-
-  test('produce and consume audit-bc using kafka', async () => {
+    // Command Handler
     consumerOptions = {
       kafkaBrokerList: 'localhost:9092',
       kafkaGroupId: 'test_consumer_group',
       outputType: MLKafkaConsumerOutputType.Json
     }
+    consoleStorage = new MLConsoleAuditStorage(logger);
+    auditCmdHandler = new MLAuditCommandHandler(logger, consoleStorage, consumerOptions, TOPIC_NAME);
+  })
 
-    //TODO Move the AuditConsumer to the Processor.
-    await auditServer.init(new MLKafkaAuditConsumer(
-        consumerOptions,
-        TOPIC_NAME,
-        logger,
-        auditServer.processAuditMessage
-    ));//Startup consumer...
+  afterAll(async () => {
+    // Cleanup
+    await auditClient.destroy()
+    await auditCmdHandler.destroy()
+  })
 
+  test('produce and consume audit-bc using kafka', async () => {
+    // Startup Handler
+    await auditCmdHandler.init();
     await auditClient.audit([sampleAE])
 
-    await expect(processor.getEntryCount() > 0)
+    await expect(consoleStorage.getEntryCount() > 0)
   })
 })

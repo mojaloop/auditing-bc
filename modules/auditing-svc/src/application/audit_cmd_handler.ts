@@ -30,40 +30,65 @@
 
 'use strict'
 
-import {IAuditConsumer} from "./audit_server";
-import {MLKafkaConsumerOptions} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib/dist/rdkafka_consumer";
-import {MLKafkaConsumer} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
-import {ILogger} from "@mojaloop/logging-bc-logging-client-lib";
+import {AuditEntry} from "@mojaloop/auditing-bc-auditing-types-lib";
 import {IMessage} from "@mojaloop/platform-shared-lib-messaging-types-lib";
+import {ConsoleLogger, ILogger} from "@mojaloop/logging-bc-logging-client-lib";
+import {MLKafkaEventHandler} from "./kafka_audit_consumer";
+import {MLKafkaConsumerOptions} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
 
-export class MLKafkaAuditConsumer implements IAuditConsumer {
-  private logger : ILogger;
-  private kafkaConsumer : MLKafkaConsumer;
-  private kafkaTopic : string;
-  private callbackFn : (message: IMessage) => Promise<void>;
+//Since the engine/processor will not be dynamic.
+export interface IStorage {
+  store(entries: AuditEntry[]): Promise<void>
+}
+
+export interface IAuditEventHandler {
+  init(): Promise<void>
+  destroy(): Promise<void>
+}
+
+export class MLAuditCommandHandler {
+  private storage : IStorage;
+  private eventHandler : IAuditEventHandler;
+  private logger: ILogger;
+  private consumerOpts : MLKafkaConsumerOptions
+  private kafkaTopic : string
 
   constructor(
-      options: MLKafkaConsumerOptions,
-      kafkaTopic : string,
       logger: ILogger,
-      callback : (message: IMessage) => Promise<void>
+      storage : IStorage,
+      consumerOpts: MLKafkaConsumerOptions,
+      kafkaTopic : string
   ) {
     this.logger = logger;
+    this.storage = storage;
+    this.consumerOpts = consumerOpts;
     this.kafkaTopic = kafkaTopic;
-    this.callbackFn = callback;
-    this.kafkaConsumer = new MLKafkaConsumer(options, logger);
   }
 
-  async init(): Promise<void> {
-    this.kafkaConsumer.setCallbackFn(this.callbackFn)//TODO this needs to be better.
-    this.kafkaConsumer.setTopics([this.kafkaTopic])
-    await this.kafkaConsumer.connect()
-    await this.kafkaConsumer.start()
-
-    return Promise.resolve(undefined);
+  init () : Promise<void> {
+    this.eventHandler = new MLKafkaEventHandler(
+        this.consumerOpts,
+        this.kafkaTopic,
+        this.logger,
+        this.processAuditMessage
+    );
+    return this.eventHandler.init()
   }
 
-  destroy(): Promise<void> {
-    return this.kafkaConsumer.destroy(false)
+  processAuditMessage (message: IMessage) : Promise<void> {
+    const value = message.value;
+    let auditEntries: AuditEntry[] = [];
+    if (typeof value == "string") {
+      auditEntries = JSON.parse(value);
+    } else {
+      this.logger.error('Unable to process value ['+value+'] of type ['+(typeof value)+'].');
+      return Promise.resolve(undefined);
+    }
+
+    return this.storage.store(auditEntries);
+  }
+
+  destroy () : Promise<void> {
+    return this.eventHandler.destroy()
   }
 }

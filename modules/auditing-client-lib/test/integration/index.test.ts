@@ -53,7 +53,7 @@ let consumerOptions: MLKafkaConsumerOptions
 
 let auditClient : MLAuditClient;
 
-const TOPIC_NAME = 'nodejs-rdkafka-producer-integration-test-audit-bc-topic'
+const TOPIC_NAME = 'nodejs-rdkafka-client-integration-test-audit-bc-topic'
 
 const sampleAE: AuditEntry = {
   'id' : 1,

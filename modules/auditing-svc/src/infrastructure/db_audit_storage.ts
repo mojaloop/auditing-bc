@@ -30,14 +30,12 @@
 
 'use strict'
 
-import { AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
+import {AuditEntry} from '@mojaloop/auditing-bc-auditing-types-lib';
+import {IStorage} from "../application/audit_cmd_handler";
 
-import {IAuditProcessor} from "./audit_server";
-import {MLKafkaAuditDispatcher} from "@mojaloop/auditing-client-lib/dist/kafka_audit_dispatcher";
+export class MLDatabaseAuditStorage implements IStorage {
 
-export class MLDatabaseAuditProcessor implements IAuditProcessor {
-
-  storeAuditEntries(entries: AuditEntry[]): Promise<void> {
+  store(entries: AuditEntry[]): Promise<void> {
     //TODO Need to persist here...
     return Promise.resolve(undefined);
   }

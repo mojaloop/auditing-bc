@@ -30,50 +30,41 @@
 
 'use strict'
 
-import {AuditEntry} from "@mojaloop/auditing-bc-auditing-types-lib";
+import {MLKafkaConsumerOptions} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib/dist/rdkafka_consumer";
+import {MLKafkaConsumer} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
+import {ILogger} from "@mojaloop/logging-bc-logging-client-lib";
 import {IMessage} from "@mojaloop/platform-shared-lib-messaging-types-lib";
-import {ConsoleLogger, ILogger} from "@mojaloop/logging-bc-logging-client-lib";
 
-//TODO processor needs to be replaced by IStorage rather.
-//Since the engine/processor will not be dynamic.
-export interface IAuditProcessor {
-  storeAuditEntries(entries: AuditEntry[]): Promise<void>
-}
+import {IAuditEventHandler} from "./audit_cmd_handler";
 
-export interface IAuditConsumer {
-  init(): Promise<void>
-  destroy(): Promise<void>
-}
+export class MLKafkaEventHandler implements IAuditEventHandler {
+  private logger : ILogger;
+  private kafkaConsumer : MLKafkaConsumer;
+  private kafkaTopic : string;
+  private callbackFn : (message: IMessage) => Promise<void>;
 
-export class MLAuditServer {
-  private processor : IAuditProcessor;
-  private consumer : IAuditConsumer;
-  private logger: ILogger;
-
-  constructor(processor : IAuditProcessor, logger : ILogger) {
-    this.processor = processor;
+  constructor(
+      options: MLKafkaConsumerOptions,
+      kafkaTopic : string,
+      logger: ILogger,
+      callback : (message: IMessage) => Promise<void>
+  ) {
     this.logger = logger;
+    this.kafkaTopic = kafkaTopic;
+    this.kafkaConsumer = new MLKafkaConsumer(options, logger);
+    this.callbackFn = callback;
   }
 
-  init (consumer : IAuditConsumer) : Promise<void> {
-    this.consumer = consumer;
-    return this.consumer.init()
+  async init(): Promise<void> {
+    this.kafkaConsumer.setCallbackFn(this.callbackFn);
+    this.kafkaConsumer.setTopics([this.kafkaTopic]);
+    await this.kafkaConsumer.connect();
+    await this.kafkaConsumer.start();
+
+    return Promise.resolve(undefined);
   }
 
-  processAuditMessage (message: IMessage) : Promise<void> {
-    const value = message.value;
-    let auditEntries: AuditEntry[] = [];
-    if (typeof value == "string") {
-      auditEntries = JSON.parse(value);
-    } else {
-      this.logger.error('Unable to process value ['+value+'] of type ['+(typeof value)+'].');
-      return Promise.resolve(undefined);
-    }
-
-    return this.processor.storeAuditEntries(auditEntries);
-  }
-
-  destroy () : Promise<void> {
-    return this.consumer.destroy()
+  destroy(): Promise<void> {
+    return this.kafkaConsumer.destroy(true)
   }
 }
