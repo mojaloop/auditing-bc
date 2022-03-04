@@ -42,7 +42,7 @@ import { ConsoleLogger } from "@mojaloop/logging-bc-logging-client-lib";
 import { MLAuditClient } from "../../../auditing-client-lib/src/audit_client";
 import {MLKafkaAuditDispatcher} from "../../../auditing-client-lib/src/kafka_audit_dispatcher";
 import {MLConsoleAuditStorage} from "../../src/infrastructure/mock_audit_storage";
-import {MLAuditCommandHandler} from "../../src/application/audit_cmd_handler";
+import {MLAuditEventHandler} from "../../src/application/audit_event_handler";
 
 const logger: ConsoleLogger = new ConsoleLogger()
 
@@ -50,7 +50,7 @@ let producerOptions: MLKafkaProducerOptions
 let consumerOptions: MLKafkaConsumerOptions
 
 let auditClient : MLAuditClient;
-let auditCmdHandler : MLAuditCommandHandler;
+let auditEvtHandler : MLAuditEventHandler;
 let consoleStorage : MLConsoleAuditStorage;
 
 const TOPIC_NAME = 'nodejs-rdkafka-svc-integration-test-audit-bc-topic'
@@ -91,18 +91,18 @@ describe('nodejs-rdkafka-audit-bc', () => {
       outputType: MLKafkaConsumerOutputType.Json
     }
     consoleStorage = new MLConsoleAuditStorage(logger);
-    auditCmdHandler = new MLAuditCommandHandler(logger, consoleStorage, consumerOptions, TOPIC_NAME);
+    auditEvtHandler = new MLAuditEventHandler(logger, consoleStorage, consumerOptions, TOPIC_NAME);
   })
 
   afterAll(async () => {
     // Cleanup
     await auditClient.destroy()
-    await auditCmdHandler.destroy()
+    await auditEvtHandler.destroy()
   })
 
   test('produce and consume audit-bc using kafka', async () => {
     // Startup Handler
-    await auditCmdHandler.init();
+    await auditEvtHandler.init();
     await auditClient.audit([sampleAE])
 
     await expect(consoleStorage.getEntryCount() > 0)

@@ -31,7 +31,7 @@
 'use strict'
 
 import {AuditEntry} from '@mojaloop/auditing-bc-auditing-types-lib';
-import {IStorage} from "../application/audit_cmd_handler";
+import {IStorage} from "../application/audit_event_handler";
 import {ILogger} from "@mojaloop/logging-bc-logging-client-lib";
 
 export class MLConsoleAuditStorage implements IStorage {

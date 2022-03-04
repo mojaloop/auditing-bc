@@ -32,26 +32,20 @@
 
 import {AuditEntry} from "@mojaloop/auditing-bc-auditing-types-lib";
 import {IMessage} from "@mojaloop/platform-shared-lib-messaging-types-lib";
-import {ConsoleLogger, ILogger} from "@mojaloop/logging-bc-logging-client-lib";
-import {MLKafkaEventHandler} from "./kafka_audit_evt_handler";
-import {MLKafkaConsumerOptions} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
+import {ILogger} from "@mojaloop/logging-bc-logging-client-lib";
+import {MLKafkaConsumer, MLKafkaConsumerOptions} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
 
 //Since the engine/processor will not be dynamic.
 export interface IStorage {
   store(entries: AuditEntry[]): Promise<void>
 }
 
-export interface IAuditEventHandler {
-  init(): Promise<void>
-  destroy(): Promise<void>
-}
-
-export class MLAuditCommandHandler {
+export class MLAuditEventHandler {
   private storage : IStorage;
-  private eventHandler : IAuditEventHandler;
   private logger: ILogger;
   private consumerOpts : MLKafkaConsumerOptions
   private kafkaTopic : string
+  private kafkaConsumer : MLKafkaConsumer;
 
   constructor(
       logger: ILogger,
@@ -65,14 +59,13 @@ export class MLAuditCommandHandler {
     this.kafkaTopic = kafkaTopic;
   }
 
-  init () : Promise<void> {
-    this.eventHandler = new MLKafkaEventHandler(
-        this.consumerOpts,
-        this.kafkaTopic,
-        this.logger,
-        this.processAuditMessage
-    );
-    return this.eventHandler.init()
+  async init () : Promise<void> {
+    this.kafkaConsumer = new MLKafkaConsumer(this.consumerOpts, this.logger);
+
+    this.kafkaConsumer.setCallbackFn(this.processAuditMessage);
+    this.kafkaConsumer.setTopics([this.kafkaTopic]);
+    await this.kafkaConsumer.connect();
+    return this.kafkaConsumer.start();
   }
 
   processAuditMessage (message: IMessage) : Promise<void> {
@@ -88,7 +81,7 @@ export class MLAuditCommandHandler {
     return this.storage.store(auditEntries);
   }
 
-  destroy () : Promise<void> {
-    return this.eventHandler.destroy()
+  async destroy () : Promise<void> {
+    return this.kafkaConsumer.destroy(true)
   }
 }
