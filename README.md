@@ -72,6 +72,13 @@ docker build -t johnnypark/kafka-zookeeper:m1 --no-cache .
 docker run -d -p 2181:2181 -p 9092:9092 -e ADVERTISED_HOST=127.0.0.1 --name kafka -e NUM_PARTITIONS=8 johnnypark/kafka-zookeeper:m1
 ```
 
+#### Docker Compose for Auditing
+> Startup, Kafka, Elasticsearch and Kibana. 
+
+```shell
+docker-compose up -d
+```
+
 ## Build
 
 ```bash

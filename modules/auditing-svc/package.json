@@ -41,6 +41,7 @@
     "dep:update": "yarn run ncu -u"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^8.1.0",
     "@mojaloop/auditing-bc-auditing-types-lib": "^0.0.1",
     "@mojaloop/logging-bc-logging-client-lib": "^0.0.1",
     "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "^0.0.2",
@@ -48,6 +49,7 @@
     "dotenv": "^10.0.0"
   },
   "devDependencies": {
+    "@elastic/elasticsearch": "^8.1.0",
     "@mojaloop/platform-shared-lib-messaging-types-lib": "^0.0.2",
     "@types/dotenv": "^8.2.0",
     "@types/jest": "^27.0.3",

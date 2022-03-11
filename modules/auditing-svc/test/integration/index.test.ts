@@ -109,4 +109,8 @@ describe('nodejs-rdkafka-audit-bc', () => {
 
     expect(consoleStorage.getEntryCount()).toBeGreaterThan(0);
   })
+
+  test('produce and consume audit-bc using kafka and elasticsearch', async () => {
+
+  })
 })
