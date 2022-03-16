@@ -38,30 +38,43 @@ import { ClientOptions } from "@elastic/elasticsearch/lib/client";
 export class MLElasticsearchAuditStorage implements IStorage {
   private client: Client
   private clientOps: ClientOptions
+  private index: string
 
-  constructor(opts: ClientOptions) {
+  constructor(
+      opts: ClientOptions,
+      index: string = 'mjl-auditing'
+  ) {
     this.clientOps = opts;
+    this.index = index;
   }
 
-  init(): Promise<void> {
-    //this.client = new Client({ node: 'http://localhost:9200' })
+  async init(): Promise<void> {
     this.client = new Client(this.clientOps);
 
-    //TODO need to map the type...
-
-    return Promise.resolve(undefined);
+    //TODO need to map the types...
+    /*
+     PUT /my-index-000001/_mapping
+     {
+      "properties": {
+      "email": {
+        "type": "keyword"
+      }
+    }
+  }
+     */
   }
 
   async store(entries: AuditEntry[]): Promise<void> {
-    await this.client.index({
-      index: 'game-of-thrones',
-      document: {
-        character: 'Daenerys Targaryen',
-        quote: 'I am the blood of the dragon.'
-      }//TODO need to store audit record.
-    })
+    for (let i = 0;i < entries.length;i++) {
+      await this.client.index({
+        index: this.index,
+        document: {
+          character: 'Daenerys Targaryen',
+          quote: 'I am the blood of the dragon.'
+        }//TODO need to store audit record.
+      });
+    }
 
-    //TODO Need to persist here...
     return Promise.resolve(undefined);
   }
 }

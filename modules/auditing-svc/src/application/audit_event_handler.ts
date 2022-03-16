@@ -64,10 +64,10 @@ export class MLAuditEventHandler {
     await this.storage.init()
 
     this.kafkaConsumer = new MLKafkaConsumer(this.consumerOpts, this.logger);
-    this.kafkaConsumer.setCallbackFn(this.processAuditMessage.bind(this));
     this.kafkaConsumer.setTopics([this.kafkaTopic]);
+    this.kafkaConsumer.setCallbackFn(this.processAuditMessage.bind(this));
     await this.kafkaConsumer.connect();
-    return this.kafkaConsumer.start();
+    await this.kafkaConsumer.start();
   }
 
   async processAuditMessage (message: IMessage) : Promise<void> {
@@ -83,7 +83,7 @@ export class MLAuditEventHandler {
 
     if (auditEntries == undefined || auditEntries.length == 0) return Promise.resolve(undefined);
 
-    return this.storage.store(auditEntries);
+    return await this.storage.store(auditEntries);
   }
 
   async destroy () : Promise<void> {

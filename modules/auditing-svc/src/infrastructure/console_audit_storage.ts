@@ -46,10 +46,9 @@ export class MLConsoleAuditStorage implements IStorage {
     return Promise.resolve(undefined);
   }
 
-  store(entries: AuditEntry[]): Promise<void> {
+  async store(entries: AuditEntry[]): Promise<void> {
     this.entryCount += entries.length;
     this.logger.info('StoringAuditEntries : ' + entries)
-    return Promise.resolve(undefined);
   }
 
   getEntryCount(): number {

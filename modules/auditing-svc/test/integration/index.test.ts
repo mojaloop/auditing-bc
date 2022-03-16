@@ -43,6 +43,7 @@ import { MLAuditClient } from "../../../auditing-client-lib/src/audit_client";
 import {MLKafkaAuditDispatcher} from "../../../auditing-client-lib/src/kafka_audit_dispatcher";
 import {MLConsoleAuditStorage} from "../../src/infrastructure/console_audit_storage";
 import {MLAuditEventHandler} from "../../src/application/audit_event_handler";
+import {MLElasticsearchAuditStorage} from "../../src/infrastructure/es_audit_storage";
 
 const logger: ConsoleLogger = new ConsoleLogger()
 
@@ -50,8 +51,6 @@ let producerOptions: MLKafkaProducerOptions
 let consumerOptions: MLKafkaConsumerOptions
 
 let auditClient : MLAuditClient;
-let auditEvtHandler : MLAuditEventHandler;
-let consoleStorage : MLConsoleAuditStorage;
 
 const TOPIC_NAME = 'nodejs-rdkafka-svc-integration-test-audit-bc-topic'
 
@@ -73,6 +72,7 @@ const sampleAE: AuditEntry = {
 }
 
 describe('nodejs-rdkafka-audit-bc', () => {
+  jest.setTimeout(10000);
 
   beforeAll(async () => {
     // Client
@@ -90,27 +90,43 @@ describe('nodejs-rdkafka-audit-bc', () => {
       kafkaGroupId: 'test_consumer_group',
       outputType: MLKafkaConsumerOutputType.Json
     }
-    consoleStorage = new MLConsoleAuditStorage(logger);
-    auditEvtHandler = new MLAuditEventHandler(logger, consoleStorage, consumerOptions, TOPIC_NAME);
   })
 
   afterAll(async () => {
     // Cleanup
     await auditClient.destroy()
-    await auditEvtHandler.destroy()
   })
 
-  test('produce and consume audit-bc using kafka', async () => {
-    // Startup Handler
-    await auditEvtHandler.init();
-    await auditClient.audit([sampleAE]);
 
+  test('produce and consume audit-bc using kafka', async () => {
+
+    // Startup Handler
+    const consoleStorage = new MLConsoleAuditStorage(logger);
+    const auditEvtHandler = new MLAuditEventHandler(logger, consoleStorage, consumerOptions, TOPIC_NAME);
+    await auditEvtHandler.init();
+
+    await auditClient.audit([sampleAE]);
     await new Promise(f => setTimeout(f, 1000));
+    await auditEvtHandler.destroy();
 
     expect(consoleStorage.getEntryCount()).toBeGreaterThan(0);
   })
 
-  test('produce and consume audit-bc using kafka and elasticsearch', async () => {
 
+  test('produce and consume audit-bc using kafka and elasticsearch', async () => {
+    // Startup Handler
+    //Elastic
+    const elasticStorage = new MLElasticsearchAuditStorage(
+        { node: 'http://localhost:9200' }
+    );
+    const auditEvtHandlerForES = new MLAuditEventHandler(logger, elasticStorage, consumerOptions, TOPIC_NAME);
+    await auditEvtHandlerForES.init();
+
+    await auditClient.audit([sampleAE]);
+    await new Promise(f => setTimeout(f, 2000));
+
+    //TODO Test condition here...
+
+    await auditEvtHandlerForES.destroy();
   })
 })

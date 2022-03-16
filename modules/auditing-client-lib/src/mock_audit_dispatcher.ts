@@ -35,9 +35,9 @@ import { AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib'
 import {IAuditDispatcher} from "./audit_client";
 
 export class MLConsoleAuditDispatcher implements IAuditDispatcher {
-  dispatch(entries: AuditEntry[]): Promise<void> {
+  async dispatch(entries: AuditEntry[]): Promise<void> {
     console.log('hello : ' + entries)
-    return Promise.resolve(undefined);
+    return await Promise.resolve(undefined);
   }
 
   destroy(): Promise<void> {

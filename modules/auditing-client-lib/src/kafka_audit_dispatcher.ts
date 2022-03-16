@@ -58,17 +58,16 @@ export class MLKafkaAuditDispatcher implements IAuditDispatcher {
     return this.kafkaProducer.destroy()
   }
 
-  dispatch(entries: AuditEntry[]): Promise<void> {
-    for (let i = 0; i < entries.length; i++) {
-      this.kafkaProducer.send({
+  async dispatch(entries: AuditEntry[]): Promise<void> {
+    for (const itm of entries) {
+      await this.kafkaProducer.send({
         topic: this.kafkaTopic,
-        value: entries[i],
+        value: itm,
         key: null,
         headers: [
           { key1: Buffer.from('testStr') }
         ]
       })
     }
-    return Promise.resolve(undefined);
   }
 }

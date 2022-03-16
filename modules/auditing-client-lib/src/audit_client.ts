@@ -48,12 +48,12 @@ export class MLAuditClient {
     this.dispatcher = dispatcher;
   }
 
-  audit (auditEntries: AuditEntry[]) : Promise<void> {
-    return this.dispatcher.dispatch(auditEntries)
+  async audit (auditEntries: AuditEntry[]) : Promise<void> {
+    return await this.dispatcher.dispatch(auditEntries)
   }
 
-  destroy () : Promise<void> {
-    return this.dispatcher.destroy()
+  async destroy () : Promise<void> {
+    return await this.dispatcher.destroy()
   }
 
   getAuditEntriesBy (
