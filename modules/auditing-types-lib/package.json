@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "start": "yarn run service",
-    "service": "tsc && node dist/index.js --config ../../es/.env",
+    "service": "tsc && node dist/index.js --config ../../docker-compose/.env",
     "build": "tsc",
     "watch": "tsc -w",
     "clean": "rm -Rf dist",

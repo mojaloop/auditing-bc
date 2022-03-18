@@ -50,31 +50,29 @@ export class MLElasticsearchAuditStorage implements IStorage {
 
   async init(): Promise<void> {
     this.client = new Client(this.clientOps);
-
-    //TODO need to map the types...
-    /*
-     PUT /my-index-000001/_mapping
-     {
-      "properties": {
-      "email": {
-        "type": "keyword"
-      }
-    }
-  }
-     */
   }
 
   async store(entries: AuditEntry[]): Promise<void> {
-    for (let i = 0;i < entries.length;i++) {
+    for (const itm of entries) {
       await this.client.index({
         index: this.index,
         document: {
-          character: 'Daenerys Targaryen',
-          quote: 'I am the blood of the dragon.'
-        }//TODO need to store audit record.
+          id: itm.id,
+          originalTimestamp: itm.originalTimestamp,
+          persistenceTimestamp: itm.persistenceTimestamp,
+          functionTransaction: itm.functionTransaction,
+          sourceBCSystemId: itm.sourceBCSystemId,
+          sourceBCId: itm.sourceBCId,
+          sourceBCSignature: 'SIG TODO',
+          sourceBCKeyId: itm.sourceBCKeyId,
+          sourceBCNetworkIdentifiers: itm.sourceBCNetworkIdentifiers,
+          securityContext: itm.securityContext,
+          actionType: itm.actionType,
+          success: itm.success,
+          metaTrackingInfo: itm.metaTrackingInfo,
+          labels: itm.labels,
+        }
       });
     }
-
-    return Promise.resolve(undefined);
   }
 }

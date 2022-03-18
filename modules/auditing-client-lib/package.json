@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "start": "yarn run service",
-    "service": "tsc && node dist/index.js --config ../../es/.env",
+    "service": "tsc && node dist/index.js --config ../../docker-compose/.env",
     "build": "tsc",
     "watch": "tsc -w",
     "clean": "rm -Rf dist",
@@ -43,7 +43,7 @@
   "dependencies": {
     "@mojaloop/auditing-bc-auditing-types-lib": "^0.0.1",
     "@mojaloop/logging-bc-logging-client-lib": "^0.0.1",
-    "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "^0.0.2",
+    "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "^0.0.4",
     "commander": "^8.3.0",
     "dotenv": "^10.0.0"
   },

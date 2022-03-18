@@ -55,15 +55,4 @@ export class MLAuditClient {
   async destroy () : Promise<void> {
     return await this.dispatcher.destroy()
   }
-
-  getAuditEntriesBy (
-      fromDate: number,
-      toDate: number,
-      actionTypes: string[],
-      offset: number,
-      limit: number
-  ) : AuditEntry[] {
-    //TODO fetch here...
-    return []
-  }
 }

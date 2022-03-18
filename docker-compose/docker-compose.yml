@@ -217,6 +217,19 @@ services:
       timeout: 10s
       retries: 120
 
+  #Kafka
+  mjl-kafka-zookeeper:
+    image: 'johnnypark/kafka-zookeeper'
+    container_name: 'mjl-kafka'
+    hostname: 'mjl-kakfa'
+    environment:
+      - ADVERTISED_HOST=127.0.0.1
+      - NUM_PARTITIONS=8
+    ports:
+      - '2181:2181'
+      - '9092:9092'
+    networks:
+      - kafka-mjl
 volumes:
   certs:
     driver: local
@@ -228,3 +241,6 @@ volumes:
     driver: local
   kibanadata:
     driver: local
+networks:
+  kafka-mjl:
+    driver: bridge

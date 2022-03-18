@@ -117,7 +117,16 @@ describe('nodejs-rdkafka-audit-bc', () => {
     // Startup Handler
     //Elastic
     const elasticStorage = new MLElasticsearchAuditStorage(
-        { node: 'http://localhost:9200' }
+        { node: 'https://localhost:9200',
+          auth: {
+            username: "elastic",
+            password: process.env.elasticsearch_password || "123@Edd!1234SS",
+          },
+          tls: {
+            ca: process.env.elasticsearch_certificate,
+            rejectUnauthorized: false,
+          }
+        }
     );
     const auditEvtHandlerForES = new MLAuditEventHandler(logger, elasticStorage, consumerOptions, TOPIC_NAME);
     await auditEvtHandlerForES.init();
@@ -125,7 +134,7 @@ describe('nodejs-rdkafka-audit-bc', () => {
     await auditClient.audit([sampleAE]);
     await new Promise(f => setTimeout(f, 2000));
 
-    //TODO Test condition here...
+    //TODO Test condition here... Perform a Search...
 
     await auditEvtHandlerForES.destroy();
   })
