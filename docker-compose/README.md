@@ -101,3 +101,11 @@ curl -X PUT "localhost:9200/mjl-auditing?pretty" -H 'Content-Type: application/j
 docker-compose down -v
 ```
 
+### Dashboard
+The audit log dashboard may be imported from Kibana. Follow the steps below:
+1. Navigate to http://localhost:5601/app/management/kibana/objects
+2. Click import and select `audit-log-dashboard.ndjson`
+3. Select appropriate options.
+4. Import!
+
+
