@@ -1,9 +1,9 @@
 {
-  "name": "@mojaloop/auditing-svc",
+  "name": "@mojaloop/auditing-bc-client-lib",
   "version": "0.0.1",
-  "description": "Mojaloop auditing server implementation",
+  "description": "Mojaloop auditing client library",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/mojaloop/auditing-bc/tree/main/modules/auditing-svc",
+  "homepage": "https://github.com/mojaloop/auditing-bc/tree/main/modules/client-lib",
   "bugs": {
     "url": "https://github.com/mojaloop/auditing-bc/issues#readme"
   },
@@ -15,25 +15,17 @@
   "files": [
     "/dist"
   ],
-  "pre-commit": [
-    "dep:check",
-    "build",
-    "lint",
-    "test:unit"
-  ],
   "scripts": {
-    "start": "npm run service",
-    "service": "npm run build && node dist/application/index.js",
     "build": "npm run clean && tsc",
     "watch": "tsc -w",
     "clean:npm": "rm -Rf node_modules",
     "clean": "rm -Rf dist",
+    "prepack": "cp -r ../../modules/public-types-lib/dist ./node_modules/@mojaloop/auditing-bc-public-types-lib",
     "pretest": "npm run build",
     "standard": "npm run lint",
     "lint": "npm run build && npx eslint ./src",
     "lint:fix": "npm run build && npx eslint ./src --fix",
     "test:unit": "jest --passWithNoTests --testMatch '**/test/unit/**/*.test.ts'",
-    "test:integration": "jest --passWithNoTests --testMatch '**/test/integration/**/*.test.ts'",
     "test:coverage": "jest --passWithNoTests --coverage --coverageThreshold='{}' --testMatch '**/test/unit/**/*.test.ts'",
     "test:coverage-check": "jest --coverage --testMatch '**/test/unit/**/*.test.ts'",
     "audit:resolve": "SHELL=sh resolve-audit",
@@ -41,18 +33,20 @@
     "dep:check": "npm run ncu -e 2",
     "dep:update": "npm run ncu -u"
   },
-  "dependencies": {
-    "@elastic/elasticsearch": "^8.1.0",
-    "@mojaloop/auditing-bc-public-types-lib": "^0.0.1",
-    "@mojaloop/logging-bc-client-lib": "^0.0.10",
-    "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "^0.0.8"
-  },
   "devDependencies": {
-    "@mojaloop/platform-shared-lib-messaging-types-lib": "^0.0.3",
+    "@mojaloop/platform-shared-lib-messaging-types-lib": "^0.0.2",
     "eslint": "^8.14.0",
     "jest": "^27.3.1",
     "npm-check-updates": "^12.5.11",
     "ts-jest": "^27.0.7",
     "typescript": "^4.6.4"
-  }
+  },
+  "dependencies": {
+    "@mojaloop/auditing-bc-public-types-lib": "*",
+    "@mojaloop/logging-bc-client-lib": "^0.0.10",
+    "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "^0.0.8"
+  },
+  "bundledDependencies": [
+    "@mojaloop/auditing-bc-public-types-lib"
+  ]
 }

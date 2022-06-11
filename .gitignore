@@ -122,3 +122,4 @@ devspace*
 
 # Yarn
 yarn.lock
+!test_keys

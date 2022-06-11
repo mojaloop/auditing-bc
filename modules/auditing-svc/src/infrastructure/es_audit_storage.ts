@@ -26,53 +26,66 @@
  - Jason Bruwer <jason.bruwer@coil.com>
 
  --------------
-******/
+ ******/
 
-'use strict'
+"use strict"
 
-import { AuditEntry } from '@mojaloop/auditing-bc-auditing-types-lib';
-import { IStorage } from "../application/audit_event_handler";
-import { Client } from '@elastic/elasticsearch';
-import { ClientOptions } from "@elastic/elasticsearch/lib/client";
+import {ILogger} from "@mojaloop/logging-bc-public-types-lib";
+import {Client} from "@elastic/elasticsearch";
+import {ClientOptions} from "@elastic/elasticsearch/lib/client";
+import {IAuditRepo} from "../domain/domain_interfaces";
+import {SignedCentralAuditEntry} from "../domain/server_types";
 
-export class MLElasticsearchAuditStorage implements IStorage {
-  private client: Client
-  private clientOps: ClientOptions
-  private index: string
+export class ElasticsearchAuditStorage implements IAuditRepo {
+  private _client: Client;
+  private _clientOps: ClientOptions;
+  private _index: string;
+  private _logger: ILogger;
 
-  constructor(
-      opts: ClientOptions,
-      index: string = 'mjl-auditing'
-  ) {
-    this.clientOps = opts;
-    this.index = index;
+  constructor(opts: ClientOptions, index: string, logger:ILogger) {
+    this._clientOps = opts;
+    this._index = index;
+    this._logger = logger;
+    this._client = new Client(this._clientOps);
   }
 
   async init(): Promise<void> {
-    this.client = new Client(this.clientOps);
+    this._logger.info("ElasticsearchAuditStorage initialised");
   }
 
-  async store(entries: AuditEntry[]): Promise<void> {
-    for (const itm of entries) {
-      await this.client.index({
-        index: this.index,
-        document: {
-          id: itm.id,
-          originalTimestamp: itm.originalTimestamp,
-          persistenceTimestamp: itm.persistenceTimestamp,
-          functionTransaction: itm.functionTransaction,
-          sourceBCSystemId: itm.sourceBCSystemId,
-          sourceBCId: itm.sourceBCId,
-          sourceBCSignature: 'SIG TODO',
-          sourceBCKeyId: itm.sourceBCKeyId,
-          sourceBCNetworkIdentifiers: itm.sourceBCNetworkIdentifiers,
-          securityContext: itm.securityContext,
-          actionType: itm.actionType,
-          success: itm.success,
-          metaTrackingInfo: itm.metaTrackingInfo,
-          labels: itm.labels,
-        }
-      });
+  async destroy(): Promise<void> {
+    return Promise.resolve();
+  }
+
+
+  async store(entry:SignedCentralAuditEntry): Promise<void>{
+    try {
+        const doc:any = {}
+        // const doc:any = {
+        //   level: entry.level,
+        //   level_numeric: Object.keys(LogLevel).indexOf(itm.level.toUpperCase()),
+        //   timestamp: itm.timestamp,
+        //   bcName: itm.bcName,
+        //   appName: itm.appName,
+        //   appVersion: itm.appVersion,
+        //   message: "" + itm.message,
+        //   component: itm.component
+        // };
+        // if(itm.meta && itm.meta.error){
+        //   doc.error = itm.meta.error
+        // }
+        // if(itm.meta){
+        //   doc.meta = itm.meta;
+        // }
+
+        await this._client.index({
+          index: this._index,
+          document: entry
+        });
+        this._logger.debug("ElasticsearchAuditStorage stored doc");
+
+    } catch (err) {
+      this._logger.error("ElasticsearchAuditStorage error", err);
     }
   }
 }
