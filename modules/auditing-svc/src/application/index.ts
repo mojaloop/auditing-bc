@@ -35,7 +35,7 @@ import {
   MLKafkaConsumer,
   MLKafkaConsumerOutputType
 } from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
-import {DefaultLogger} from "@mojaloop/logging-bc-client-lib";
+import {DefaultLogger, KafkaLogger} from "@mojaloop/logging-bc-client-lib";
 import {AuditingAggregate} from "../domain/auditing_agg";
 import {IMessage} from "@mojaloop/platform-shared-lib-messaging-types-lib";
 import {IAuditAggregateCryptoProvider, IAuditRepo} from "../domain/domain_interfaces";
@@ -49,6 +49,7 @@ const APP_VERSION = "0.0.1";
 const LOGLEVEL = LogLevel.DEBUG;
 
 const KAFKA_AUDITS_TOPIC = "audits";
+const KAFKA_LOGS_TOPIC = "logs";
 
 const ES_AUDITING_INDEX = "mjl-auditing";
 const DEV_ES_USERNAME = "elastic";
@@ -66,6 +67,12 @@ const elasticOpts = { node: 'https://localhost:9200',
   }
 };
 
+// kafka logger
+const kafkaProducerOptions = {
+  kafkaBrokerList: "localhost:9092"
+}
+
+
 // Event Handler
 const kafkaConsumerOptions = {
   kafkaBrokerList: "localhost:9092",
@@ -74,7 +81,14 @@ const kafkaConsumerOptions = {
 }
 
 
-const logger:ILogger = new DefaultLogger(BC_NAME, APP_NAME, APP_VERSION, LOGLEVEL);
+const logger:ILogger = new KafkaLogger(
+        BC_NAME,
+        APP_NAME,
+        APP_VERSION,
+        kafkaProducerOptions,
+        KAFKA_LOGS_TOPIC,
+        LOGLEVEL
+);
 
 let agg: AuditingAggregate;
 let kafkaConsumer: MLKafkaConsumer;
@@ -83,6 +97,7 @@ let aggCrypto:IAuditAggregateCryptoProvider;
 
 async function start():Promise<void> {
   // todo create aggRepo
+  await (logger as KafkaLogger).start();
 
   aggRepo = new ElasticsearchAuditStorage(elasticOpts, ES_AUDITING_INDEX, logger);
   await aggRepo.init();
