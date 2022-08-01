@@ -31,7 +31,7 @@
 'use strict'
 
 import {SignedSourceAuditEntry} from '@mojaloop/auditing-bc-public-types-lib'
-import {IAuditClientDispatcher} from "./audit_client";
+import {IAuditClientDispatcher} from "../../";
 
 export class MockAuditClientDispatcher implements IAuditClientDispatcher {
     init(): Promise<void> {

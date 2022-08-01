@@ -1,6 +1,6 @@
 {
   "name": "@mojaloop/auditing-bc-public-types-lib",
-  "version": "0.0.1",
+  "version": "0.0.7",
   "description": "mojaloop auditing common types",
   "license": "Apache-2.0",
   "homepage": "https://github.com/mojaloop/auditing-bc/tree/main/modules/auditing-types-lib",
@@ -38,7 +38,8 @@
     "audit:resolve": "SHELL=sh resolve-audit",
     "audit:check": "SHELL=sh check-audit",
     "dep:check": "npm run ncu -e 2",
-    "dep:update": "npm run ncu -u"
+    "dep:update": "npm run ncu -u",
+    "pub": "npm version patch --force && npm publish --tag=latest --access public"
   },
   "devDependencies": {
     "eslint": "^8.14.0",

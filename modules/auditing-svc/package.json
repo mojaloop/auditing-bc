@@ -1,5 +1,5 @@
 {
-  "name": "@mojaloop/auditing-svc",
+  "name": "@mojaloop/auditing-bc-auditing-svc",
   "version": "0.0.1",
   "description": "Mojaloop auditing server implementation",
   "license": "Apache-2.0",
@@ -43,8 +43,9 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "^8.1.0",
-    "@mojaloop/auditing-bc-public-types-lib": "^0.0.1",
+    "@mojaloop/auditing-bc-public-types-lib": "*",
     "@mojaloop/logging-bc-client-lib": "^0.0.10",
+    "@mojaloop/logging-bc-public-types-lib": "^0.0.3",
     "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "^0.0.8"
   },
   "devDependencies": {

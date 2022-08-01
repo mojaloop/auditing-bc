@@ -33,7 +33,7 @@
 import {SignedSourceAuditEntry} from '@mojaloop/auditing-bc-public-types-lib'
 import {MLKafkaProducer, MLKafkaProducerOptions} from '@mojaloop/platform-shared-lib-nodejs-kafka-client-lib'
 
-import {IAuditClientDispatcher} from "./audit_client";
+import {IAuditClientDispatcher} from "./interfaces";
 import {IMessage} from "@mojaloop/platform-shared-lib-messaging-types-lib";
 import {ILogger} from "@mojaloop/logging-bc-public-types-lib";
 

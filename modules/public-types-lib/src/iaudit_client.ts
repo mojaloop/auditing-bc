@@ -33,13 +33,13 @@
 
 "use strict"
 
-import {SourceAuditEntry, AuditEntryLabel, SecurityContext} from "./audit_types";
+import {AuditEntryLabel, AuditSecurityContext} from "./audit_types";
 
 export interface IAuditClient {
     init() : Promise<void>;
     destroy() : Promise<void>;
 
-    audit(actionType:string, actionSuccessful:boolean, securityContext?: SecurityContext , labels?: AuditEntryLabel[]): Promise<void>;
+    audit(actionType:string, actionSuccessful:boolean, securityContext?: AuditSecurityContext , labels?: AuditEntryLabel[]): Promise<void>;
 
     // auditMany(entries: SourceAuditEntry[]) : Promise<void>;
 }

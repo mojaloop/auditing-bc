@@ -28,7 +28,58 @@
  --------------
  ******/
 
-'use strict'
+"use strict"
+
+import {
+    AuditClient,
+    IAuditClientCryptoProvider,
+    IAuditClientDispatcher, KafkaAuditClientDispatcher,
+    LocalAuditClientCryptoProvider,
+} from "../../src/";
+
+import {ConsoleLogger, LogLevel} from "@mojaloop/logging-bc-public-types-lib";
+import {AuditSecurityContext} from "@mojaloop/auditing-bc-public-types-lib";
+
+const BC_NAME = "logging-bc";
+const APP_NAME = "client-lib";
+const APP_VERSION = "0.0.1";
+const LOGLEVEL = LogLevel.TRACE;
+const KAFKA_AUDIT_TOPIC = "audits";
+
+const KAFKA_URL = process.env["KAFKA_URL"] || "localhost:9092";
+
+const kafkaProducerOptions = {
+    kafkaBrokerList: KAFKA_URL
+}
+
+const logger = new ConsoleLogger();
+let auditClient: AuditClient;
+let cryptoProvider: IAuditClientCryptoProvider;
+let auditDispatcher: IAuditClientDispatcher;
+const secCtx: AuditSecurityContext = {
+    userId: "userid",
+    appId: null,
+    role: "role"
+}
+
+describe('test audit client with mock dispatcher', () => {
+
+    beforeAll(async ()=>{
+        LocalAuditClientCryptoProvider.createRsaPrivateKeyFileSync("../tmp_key_file", 2048);
+        cryptoProvider = new LocalAuditClientCryptoProvider("../tmp_key_file");
+        auditDispatcher = new KafkaAuditClientDispatcher(kafkaProducerOptions, KAFKA_AUDIT_TOPIC, logger);
+        auditClient = new AuditClient(BC_NAME, APP_NAME, APP_VERSION, cryptoProvider, auditDispatcher);
+
+        await auditClient.init();
+    });
+
+    test("test send audit entry", async () => {
+        await auditClient.audit("testAction", true, secCtx);
+    })
+})
+
+
+/*
 
 import { AuditEntry } from '@mojaloop/auditing-bc-public-types-lib'
 import {
@@ -119,3 +170,4 @@ describe('nodejs-rdkafka-audit-bc', () => {
     expect(receivedMessages).toEqual(1)
   })
 })
+*/

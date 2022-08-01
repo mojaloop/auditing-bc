@@ -29,8 +29,8 @@
     "audit:check": "npm -ws -v run audit:check",
     "dep:check": "npm -ws -v run dep:check",
     "dep:update": "npm -ws -v run dep:update",
-    "publish:public-types": "npm -w @mojaloop/auditing-bc-public-types-lib run publish",
-    "publish:client-lib": "npm -w @mojaloop/auditing-bc-client-lib run publish"
+    "publish:public-types": "npm -w @mojaloop/auditing-bc-public-types-lib run pub",
+    "publish:client-lib": "npm -w @mojaloop/auditing-bc-client-lib run pub"
   },
   "devDependencies": {
     "@types/jest": "^27.0.3",
@@ -46,6 +46,6 @@
   },
   "workspaces": [
     "modules/*"
-  ]
-
+  ],
+  "packageManager": "yarn@3.2.2"
 }

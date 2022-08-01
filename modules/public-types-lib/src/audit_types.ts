@@ -41,7 +41,8 @@
 //   spanId: string
 // }
 
-export declare type SecurityContext = {
+// TODO rename to AuditSecurityContext
+export declare type AuditSecurityContext = {
     userId: string | null;                         // when action was made by a user principal
     appId: string | null;                          // when action was made by a app principal
     role: string | null;                           // role associated with action (role that allows action)
@@ -50,7 +51,7 @@ export declare type SecurityContext = {
 export declare type AuditEntryLabel = {
     key: string;
     value: string;
-    encryptionKeyId: string;
+    encryptionKeyId?: string;
 }
 
 export declare type NetworkSource = {
@@ -79,7 +80,7 @@ export declare type SourceAuditEntry = {
     sourceKeyId: string;                        // this should be inside the envelope, to prevent re-envelope
 
     callerNetworkSources: NetworkSource[];      // caller source address
-    securityContext: SecurityContext;           // security principal and the permitting role
+    securityContext: AuditSecurityContext;           // security principal and the permitting role
 
     actionType: string;                         // action executed (actions are per BC action)
     actionSuccessful: boolean;                  // was the executed action successful

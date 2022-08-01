@@ -55,8 +55,11 @@ const ES_AUDITING_INDEX = "mjl-auditing";
 const DEV_ES_USERNAME = "elastic";
 const DEV_ES_PASSWORD = "123@Edd!1234SS";
 
+const KAFKA_URL = process.env["KAFKA_URL"] || "localhost:9092";
+const ELASTICSEARCH_URL = process.env["ELASTICSEARCH_URL"] || "https://localhost:9200";
 
-const elasticOpts = { node: 'https://localhost:9200',
+const elasticOpts = {
+  node: ELASTICSEARCH_URL,
   auth: {
     username: process.env.ES_USERNAME || DEV_ES_USERNAME,
     password: process.env.ES_PASSWORD || DEV_ES_PASSWORD,
@@ -69,13 +72,13 @@ const elasticOpts = { node: 'https://localhost:9200',
 
 // kafka logger
 const kafkaProducerOptions = {
-  kafkaBrokerList: "localhost:9092"
+  kafkaBrokerList: KAFKA_URL
 }
 
 
 // Event Handler
 const kafkaConsumerOptions = {
-  kafkaBrokerList: "localhost:9092",
+  kafkaBrokerList: KAFKA_URL,
   kafkaGroupId: `${BC_NAME}_${APP_NAME}`,
   outputType: MLKafkaConsumerOutputType.Json
 }

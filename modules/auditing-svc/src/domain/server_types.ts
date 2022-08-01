@@ -64,7 +64,7 @@ export declare type SignedCentralAuditEntry = CentralAuditEntry & {
 import {
     AuditEntryLabel,
     NetworkSource,
-    SecurityContext,
+    AuditSecurityContext,
     SignedSourceAuditEntry
 } from "@mojaloop/auditing-bc-public-types-lib";
 
@@ -95,7 +95,7 @@ export declare type SignedCentralAuditEntry = {
     sourceKeyId: string;                        // this should be inside the envelope, to prevent re-envelope
 
     callerNetworkSource: NetworkSource;         // caller source address
-    securityContext: SecurityContext;           // security principal and the permitting role
+    securityContext: AuditSecurityContext;      // security principal and the permitting role
 
     actionType: string;                         // action executed (actions are per BC action)
     actionSuccessful: boolean;                  // was the executed action successful

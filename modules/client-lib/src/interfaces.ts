@@ -22,9 +22,6 @@
  * Gates Foundation
  - Name Surname <name.surname@gatesfoundation.com>
 
- * Coil
- - Jason Bruwer <jason.bruwer@coil.com>
-
  * Crosslake
  - Pedro Sousa Barreto <pedrob@crosslaketech.com>
 
@@ -33,7 +30,17 @@
 
 "use strict"
 
-export * from "./audit_client";
-export * from "./interfaces";
-export * from "./kafka_audit_dispatcher";
-export * from "./local_crypto_provider";
+import {SignedSourceAuditEntry} from "@mojaloop/auditing-bc-public-types-lib";
+
+export interface IAuditClientCryptoProvider {
+    init(): Promise<void>;
+    destroy(): Promise<void>
+    getSha1Signature(strData:string):Promise<string>;
+    getPubKeyFingerprint():Promise<string>;
+}
+
+export interface IAuditClientDispatcher {
+    init(): Promise<void>
+    destroy(): Promise<void>
+    dispatch(entries: SignedSourceAuditEntry[]): Promise<void>
+}

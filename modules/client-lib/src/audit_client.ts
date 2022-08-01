@@ -30,26 +30,14 @@
 "use strict"
 import * as uuid from "uuid";
 import {
-  AuditEntryLabel,
+  AuditEntryLabel, AuditSecurityContext,
   IAuditClient, NetworkSource,
-  SecurityContext,
   SignedSourceAuditEntry,
   SourceAuditEntry
 } from "@mojaloop/auditing-bc-public-types-lib";
 import os, {NetworkInterfaceInfo} from "os";
+import {IAuditClientCryptoProvider, IAuditClientDispatcher} from "./interfaces";
 
-export interface IAuditClientCryptoProvider {
-  init(): Promise<void>;
-  destroy(): Promise<void>
-  getSha1Signature(strData:string):Promise<string>;
-  getPubKeyFingerprint():Promise<string>;
-}
-
-export interface IAuditClientDispatcher {
-  init(): Promise<void>
-  destroy(): Promise<void>
-  dispatch(entries: SignedSourceAuditEntry[]): Promise<void>
-}
 
 export class AuditClient implements IAuditClient{
   protected _bcName:string;
@@ -84,8 +72,8 @@ export class AuditClient implements IAuditClient{
     return Promise.resolve(undefined);
   }
 
-  private _createEntry(actionType:string, actionSuccessful:boolean, securityContext?: SecurityContext , labels?: AuditEntryLabel[]):SourceAuditEntry{
-    const secCtx: SecurityContext = securityContext || {
+  private _createEntry(actionType:string, actionSuccessful:boolean, securityContext?: AuditSecurityContext , labels?: AuditEntryLabel[]):SourceAuditEntry{
+    const secCtx: AuditSecurityContext = securityContext || {
       userId: null,
       appId: null,
       role: null
@@ -135,7 +123,7 @@ export class AuditClient implements IAuditClient{
 
 
 
-  async audit(actionType:string, actionSuccessful:boolean, securityContext?: SecurityContext , labels?: AuditEntryLabel[]): Promise<void>  {
+  async audit(actionType:string, actionSuccessful:boolean, securityContext?: AuditSecurityContext , labels?: AuditEntryLabel[]): Promise<void>  {
     const entry = this._createEntry(actionType, actionSuccessful, securityContext, labels);
     const signedEntry:SignedSourceAuditEntry = await this._signEntry(entry);
     await this._dispatcher.dispatch([signedEntry]);

@@ -1,6 +1,6 @@
 {
   "name": "@mojaloop/auditing-bc-client-lib",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "description": "Mojaloop auditing client library",
   "license": "Apache-2.0",
   "homepage": "https://github.com/mojaloop/auditing-bc/tree/main/modules/client-lib",
@@ -20,7 +20,6 @@
     "watch": "tsc -w",
     "clean:npm": "rm -Rf node_modules",
     "clean": "rm -Rf dist",
-    "prepack": "cp -r ../../modules/public-types-lib/dist ./node_modules/@mojaloop/auditing-bc-public-types-lib",
     "pretest": "npm run build",
     "standard": "npm run lint",
     "lint": "npm run build && npx eslint ./src",
@@ -31,10 +30,12 @@
     "audit:resolve": "SHELL=sh resolve-audit",
     "audit:check": "SHELL=sh check-audit",
     "dep:check": "npm run ncu -e 2",
-    "dep:update": "npm run ncu -u"
+    "dep:update": "npm run ncu -u",
+    "pub": "npm version patch --force && npm publish --tag=latest --access public"
   },
   "devDependencies": {
     "@mojaloop/platform-shared-lib-messaging-types-lib": "^0.0.2",
+    "@types/uuid": "^8.3.4",
     "eslint": "^8.14.0",
     "jest": "^27.3.1",
     "npm-check-updates": "^12.5.11",
@@ -44,9 +45,8 @@
   "dependencies": {
     "@mojaloop/auditing-bc-public-types-lib": "*",
     "@mojaloop/logging-bc-client-lib": "^0.0.10",
-    "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "^0.0.8"
-  },
-  "bundledDependencies": [
-    "@mojaloop/auditing-bc-public-types-lib"
-  ]
+    "@mojaloop/logging-bc-public-types-lib": "^0.0.3",
+    "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "^0.0.8",
+    "uuid": "^8.3.2"
+  }
 }

@@ -31,17 +31,15 @@
 "use strict"
 
 
-import {readFileSync} from "fs";
+import {readFileSync, writeFileSync} from "fs";
 import crypto from "crypto";
-import {IAuditClientCryptoProvider} from "./audit_client";
+import {IAuditClientCryptoProvider} from "./interfaces";
 
-export class TestAuditClientCryptoProvider implements IAuditClientCryptoProvider{
+export class LocalAuditClientCryptoProvider implements IAuditClientCryptoProvider{
     private _privateKeyPath: string;
     private _privateKey: Buffer;
     private _privateKeyObj: crypto.KeyObject;
     private _publicKeyObj: crypto.KeyObject;
-
-
 
     constructor(privateKeyPath:string){
         this._privateKeyPath = privateKeyPath;
@@ -72,5 +70,23 @@ export class TestAuditClientCryptoProvider implements IAuditClientCryptoProvider
         console.log(`[Crypto] - getPubKeyFingerprint() - Public Key Fingerprint: ${fingerprint}\n`);
 
         return Promise.resolve(fingerprint);
+    }
+
+    static createRsaPrivateKeyFileSync(filePath:string, modulusLength = 2048):void{
+        const keyOptions = {
+            modulusLength: modulusLength,
+            publicKeyEncoding: {
+                type: "spki",
+                format: "pem"
+            },
+            privateKeyEncoding: {
+                type: "pkcs8",
+                format: "pem",
+                //cipher: 'aes-256-cbc',   // *optional*
+                //passphrase: 'top secret' // *optional*
+            }
+        }
+        const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", keyOptions);
+        writeFileSync(filePath, Buffer.from(privateKey.toString()));
     }
 }
