@@ -159,8 +159,7 @@ workflows:
       - coverage-report:
           context: org-global
           requires:
-            - build
-            - lint
+            - test-unit
       - publish_npm:
           context: org-global
           filters:
