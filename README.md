@@ -17,7 +17,7 @@
 #### Run
 
 ```bash
-yarn start:auditing-svc
+npm run start:auditing-svc
 ```
 
 ## Usage
@@ -31,27 +31,10 @@ nvm install
 nvm use
 ```
 
-### Install Yarn
-
-```bash
-npm install --global yarn
-npm -g yarn `(//TODO not working, remove)`
-```
-
 ### Install Dependencies
 
 ```bash
-yarn
-```
-
-If your release of yarn is not v3.x >, you will need to run the below command in order to enable v3.
-```bash
-yarn set version berry
-```
-   
-Ensure the version is > 3.x.x via:
-```bash
-yarn --version
+npm install 
 ```
 
 #### Docker Image for Kafka
@@ -82,19 +65,19 @@ docker-compose up -d
 ## Build
 
 ```bash
-yarn install
-yarn build
+npm install
+npm run build
 ```
 
 ## Run
 
 ```bash
-yarn start
+npm run start
 ```
 
 ## Unit Tests
 ```bash
-yarn test:unit
+npm run test:unit
 ```
 
 ## Integration Tests
@@ -105,6 +88,6 @@ docker run -d -p 2181:2181 -p 9092:9092 -e ADVERTISED_HOST=127.0.0.1 --name kafk
 ```
 
 ```bash
-yarn test:integration
+npm run test:integration
 ```
 

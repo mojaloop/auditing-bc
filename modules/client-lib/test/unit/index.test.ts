@@ -34,19 +34,18 @@
 import {
     AuditClient,
     IAuditClientCryptoProvider,
-    IAuditClientDispatcher, KafkaAuditClientDispatcher,
+    IAuditClientDispatcher,
     LocalAuditClientCryptoProvider,
 } from "../../src/";
 
 import {ConsoleLogger, LogLevel} from "@mojaloop/logging-bc-public-types-lib";
 import {AuditSecurityContext} from "@mojaloop/auditing-bc-public-types-lib";
 import {MockAuditClientDispatcher} from "./mock_audit_dispatcher";
+import {existsSync} from "fs";
 
 const BC_NAME = "logging-bc";
 const APP_NAME = "client-lib";
 const APP_VERSION = "0.0.1";
-const LOGLEVEL = LogLevel.TRACE;
-const KAFKA_AUDIT_TOPIC = "audits";
 
 
 const logger = new ConsoleLogger();
@@ -57,13 +56,17 @@ const secCtx: AuditSecurityContext = {
     userId: "userid",
     appId: null,
     role: "role"
-}
+};
 
-describe('test audit client with mock dispatcher', () => {
+const TMP_KEY_FILE_PATH = "./tmp_key_file";
+
+describe("test audit client with mock dispatcher", () => {
 
     beforeAll(async ()=>{
-        LocalAuditClientCryptoProvider.createRsaPrivateKeyFileSync("../tmp_key_file", 2048);
-        cryptoProvider = new LocalAuditClientCryptoProvider("../tmp_key_file");
+        if(!existsSync(TMP_KEY_FILE_PATH)) {
+            LocalAuditClientCryptoProvider.createRsaPrivateKeyFileSync(TMP_KEY_FILE_PATH, 2048);
+        }
+        cryptoProvider = new LocalAuditClientCryptoProvider(TMP_KEY_FILE_PATH);
 
         auditDispatcher= new MockAuditClientDispatcher();
         auditClient = new AuditClient(BC_NAME, APP_NAME, APP_VERSION, cryptoProvider, auditDispatcher);
@@ -73,5 +76,5 @@ describe('test audit client with mock dispatcher', () => {
 
     test("test send audit entry", async () => {
         await auditClient.audit("testAction", true, secCtx);
-    })
-})
+    });
+});

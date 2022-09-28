@@ -25,129 +25,15 @@
  * Coil
  - Jason Bruwer <jason.bruwer@coil.com>
 
+ * Crosslake
+ - Pedro Sousa Barreto <pedrob@crosslaketech.com>
+
  --------------
  ******/
 
-"use strict"
+"use strict";
 
-import {ILogger, LogLevel} from "@mojaloop/logging-bc-public-types-lib";
-import {
-  MLKafkaConsumer,
-  MLKafkaConsumerOutputType
-} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
-import {DefaultLogger, KafkaLogger} from "@mojaloop/logging-bc-client-lib";
-import {AuditingAggregate} from "../domain/auditing_agg";
-import {IMessage} from "@mojaloop/platform-shared-lib-messaging-types-lib";
-import {IAuditAggregateCryptoProvider, IAuditRepo} from "../domain/domain_interfaces";
-import {AuditAggregateCryptoProvider} from "../infrastructure/audit_agg_crypto_provider";
-import {ElasticsearchAuditStorage} from "../infrastructure/es_audit_storage";
-import {SignedSourceAuditEntry} from "@mojaloop/auditing-bc-public-types-lib";
-
-const BC_NAME = "auditing-bc";
-const APP_NAME = "auditing-svc";
-const APP_VERSION = "0.0.1";
-const LOGLEVEL = LogLevel.DEBUG;
-
-const KAFKA_AUDITS_TOPIC = "audits";
-const KAFKA_LOGS_TOPIC = "logs";
-
-const ES_AUDITING_INDEX = "mjl-auditing";
-const DEV_ES_USERNAME = "elastic";
-const DEV_ES_PASSWORD = "123@Edd!1234SS";
-
-const KAFKA_URL = process.env["KAFKA_URL"] || "localhost:9092";
-const ELASTICSEARCH_URL = process.env["ELASTICSEARCH_URL"] || "https://localhost:9200";
-
-const elasticOpts = {
-  node: ELASTICSEARCH_URL,
-  auth: {
-    username: process.env.ES_USERNAME || DEV_ES_USERNAME,
-    password: process.env.ES_PASSWORD || DEV_ES_PASSWORD,
-  },
-  tls: {
-    ca: process.env.elasticsearch_certificate,
-    rejectUnauthorized: false,
-  }
-};
-
-// kafka logger
-const kafkaProducerOptions = {
-  kafkaBrokerList: KAFKA_URL
-}
-
-
-// Event Handler
-const kafkaConsumerOptions = {
-  kafkaBrokerList: KAFKA_URL,
-  kafkaGroupId: `${BC_NAME}_${APP_NAME}`,
-  outputType: MLKafkaConsumerOutputType.Json
-}
-
-
-const logger:ILogger = new KafkaLogger(
-        BC_NAME,
-        APP_NAME,
-        APP_VERSION,
-        kafkaProducerOptions,
-        KAFKA_LOGS_TOPIC,
-        LOGLEVEL
-);
-
-let agg: AuditingAggregate;
-let kafkaConsumer: MLKafkaConsumer;
-let aggRepo:IAuditRepo;
-let aggCrypto:IAuditAggregateCryptoProvider;
-
-async function start():Promise<void> {
-  // todo create aggRepo
-  await (logger as KafkaLogger).start();
-
-  aggRepo = new ElasticsearchAuditStorage(elasticOpts, ES_AUDITING_INDEX, logger);
-  await aggRepo.init();
-
-  aggCrypto = new AuditAggregateCryptoProvider("../../test_keys/3_private.pem");
-  await aggCrypto.init();
-
-  agg = new AuditingAggregate(BC_NAME, APP_NAME, APP_VERSION, aggRepo, aggCrypto, logger);
-
-  logger.info("AuditingAggregate initialised");
-
-  kafkaConsumer = new MLKafkaConsumer(kafkaConsumerOptions, logger);
-  kafkaConsumer.setTopics([KAFKA_AUDITS_TOPIC]);
-  kafkaConsumer.setCallbackFn(processLogMessage);
-  await kafkaConsumer.connect();
-  await kafkaConsumer.start();
-
-  logger.info("kafkaConsumer initialised");
-}
-
-async function processLogMessage (message: IMessage) : Promise<void> {
-  const value = message.value;
-
-  await agg.processSignedSourceAuditEntry(value as SignedSourceAuditEntry);
-}
-
-/**
-* process termination and cleanup
-*/
-
-async function _handle_int_and_term_signals(signal: NodeJS.Signals): Promise<void> {
-  logger.info(`Service - ${signal} received - cleaning up...`);
-  process.exit();
-}
-
-//catches ctrl+c event
-process.on("SIGINT", _handle_int_and_term_signals.bind(this));
-//catches program termination event
-process.on("SIGTERM", _handle_int_and_term_signals.bind(this));
-
-//do something when app is closing
-process.on("exit", async () => {
-  logger.info("Microservice - exiting...");
-  await kafkaConsumer.destroy(true);
-  await aggRepo.destroy();
-  await aggCrypto.destroy();
+import {Service} from "./service";
+Service.start().then(() => {
+    console.log("Service terminated");
 });
-
-
-start();

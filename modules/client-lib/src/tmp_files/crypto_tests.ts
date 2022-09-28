@@ -1,4 +1,6 @@
-'use strict'
+"use strict";
+
+/* istanbul ignore file */
 
 import crypto from "crypto";
 import {readFileSync} from "fs";

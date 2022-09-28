@@ -31,8 +31,9 @@
  --------------
  ******/
 
-"use strict"
+"use strict";
 
+/* istanbul ignore file */
 
 import { ILogger, LogLevel, ConsoleLogger } from "@mojaloop/logging-bc-public-types-lib";
 import {AuditSecurityContext, SourceAuditEntry} from "@mojaloop/auditing-bc-public-types-lib";
@@ -52,7 +53,7 @@ const KAFKA_AUDIT_TOPIC = "audits";
 
 const kafkaProducerOptions = {
     kafkaBrokerList: "localhost:9092"
-}
+};
 
 const logger = new ConsoleLogger();
 let auditClient: AuditClient;
@@ -69,10 +70,10 @@ async function start() {
         userId: "userid",
         appId: null,
         role: "role"
-    }
+    };
 
     await auditClient.audit("testAction", true, secCtx);
-    debugger
+    // debugger;
 }
 
 async function testVerification(){
@@ -166,7 +167,7 @@ async function testVerification(){
         "actionSuccessful": true,
         "labels": [],
         "sourceKeyId": "6a724897fbd003680795376d4d3f5345446653bf"
-    }
+    };
     const sourceSignature ="jwocKL7dAhHnJQQ1115mkVy7lTuC+x4iwFr9Wjy2+cQC6hlB05r14xcugOFQGQ2jgawXOxADYwTWKWP0OlHmYZB9T2SSPuV0uiS910/nuCD2qtGSxIWXLXbvVKAjzfQ49rHB0uS0W4rqo4uqKnkI8GIBh0EQj9NagxaSs3oG70GiAABc+7N7E4EIGVdb9bgMFsCAvAi7cYS5SS0+PJGyJp7eZswdrQkR9aqZDrrhR/1q21QJEho2vc/xFGg/+oHqNvt5YVYa+cNCPNqBenitNaC4l9tgNnvI04AezQQHKc/Nl0AsxAAGvz2+f9ewrhR+bNhdqenw7DAdORcdteXGVA==";
 
     const publicKey = readFileSync("./test_keys/3_public.pem");
@@ -175,7 +176,7 @@ async function testVerification(){
     const keyFingerprint = crypto.createHash("sha1").update(pubKeyDER).digest("hex");
 
     if(keyFingerprint !== sourceAuditEntry.sourceKeyId){
-        debugger;
+        // debugger;
     }
 
     const objStr = JSON.stringify(sourceAuditEntry);

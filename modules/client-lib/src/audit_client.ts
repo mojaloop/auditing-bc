@@ -27,8 +27,8 @@
 
  --------------
 ******/
-"use strict"
-import * as uuid from "uuid";
+"use strict";
+import * as Crypto from "crypto";
 import {
   AuditEntryLabel, AuditSecurityContext,
   IAuditClient, NetworkSource,
@@ -57,7 +57,7 @@ export class AuditClient implements IAuditClient{
     this._netSources = Object.values(os.networkInterfaces())
         .flat()
         .filter((value:NetworkInterfaceInfo | undefined) => value && (value.family === "IPv4" || value.family === "IPv6") && !value.internal)
-        .map((value:NetworkInterfaceInfo | undefined) => { return {family: value!.family, address:value!.address}} );
+        .map((value:NetworkInterfaceInfo | undefined) => { return {family: value!.family, address:value!.address};} );
   }
 
   async init(): Promise<void> {
@@ -77,10 +77,10 @@ export class AuditClient implements IAuditClient{
       userId: null,
       appId: null,
       role: null
-    }
+    };
 
     const entry:SourceAuditEntry ={
-      id: uuid.v4(),
+      id: Crypto.randomUUID(),
       actionTimestamp: Date.now(),
 
       sourceBcName: this._bcName,

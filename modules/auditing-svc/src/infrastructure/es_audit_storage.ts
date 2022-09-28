@@ -28,7 +28,7 @@
  --------------
  ******/
 
-"use strict"
+"use strict";
 
 import {ILogger} from "@mojaloop/logging-bc-public-types-lib";
 import {Client} from "@elastic/elasticsearch";
@@ -64,7 +64,7 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
 
   async store(entry:SignedCentralAuditEntry): Promise<void>{
     try {
-        const doc:any = {}
+        //const doc:any = {}
         // const doc:any = {
         //   level: entry.level,
         //   level_numeric: Object.keys(LogLevel).indexOf(itm.level.toUpperCase()),

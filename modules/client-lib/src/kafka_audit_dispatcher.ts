@@ -28,24 +28,23 @@
  --------------
  ******/
 
-"use strict"
+"use strict";
 
-import {SignedSourceAuditEntry} from '@mojaloop/auditing-bc-public-types-lib'
-import {MLKafkaProducer, MLKafkaProducerOptions} from '@mojaloop/platform-shared-lib-nodejs-kafka-client-lib'
+import {SignedSourceAuditEntry} from '@mojaloop/auditing-bc-public-types-lib';
+import {IRawMessage, MLKafkaRawProducer, MLKafkaRawProducerOptions} from '@mojaloop/platform-shared-lib-nodejs-kafka-client-lib';
 
 import {IAuditClientDispatcher} from "./interfaces";
-import {IMessage} from "@mojaloop/platform-shared-lib-messaging-types-lib";
 import {ILogger} from "@mojaloop/logging-bc-public-types-lib";
 
 export class KafkaAuditClientDispatcher implements IAuditClientDispatcher {
-    private _kafkaProducer: MLKafkaProducer;
+    private _kafkaProducer: MLKafkaRawProducer;
     private _kafkaTopic: string;
     private _logger: ILogger;
 
-    constructor(producerOptions: MLKafkaProducerOptions, kafkaTopic: string, logger: ILogger) {
+    constructor(producerOptions: MLKafkaRawProducerOptions, kafkaTopic: string, logger: ILogger) {
         this._kafkaTopic = kafkaTopic;
         this._logger = logger;
-        this._kafkaProducer = new MLKafkaProducer(producerOptions, this._logger);
+        this._kafkaProducer = new MLKafkaRawProducer(producerOptions, this._logger);
     }
 
     async init(): Promise<void> {
@@ -57,7 +56,7 @@ export class KafkaAuditClientDispatcher implements IAuditClientDispatcher {
     }
 
     async dispatch(entries: SignedSourceAuditEntry[]): Promise<void> {
-        const msgs: IMessage[] = [];
+        const msgs: IRawMessage[] = [];
 
         for (const itm of entries) {
             msgs.push({
@@ -65,7 +64,9 @@ export class KafkaAuditClientDispatcher implements IAuditClientDispatcher {
                 value: itm,
                 key: null,
                 timestamp: Date.now(),
-                headers: null
+                headers: null,
+                partition: null,
+                offset: null
                 // headers: [
                 //   { key1: Buffer.from('testStr') }
                 // ]

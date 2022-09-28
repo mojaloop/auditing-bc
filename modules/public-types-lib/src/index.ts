@@ -30,7 +30,7 @@
  --------------
  ******/
 
-"use strict"
+"use strict";
 
 export * from "./iaudit_client";
 export * from "./audit_types";

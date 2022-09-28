@@ -28,10 +28,10 @@
  --------------
  ******/
 
-"use strict"
+"use strict";
 
 import {IAuditAggregateCryptoProvider} from "../domain/domain_interfaces";
-import {SignedSourceAuditEntry, SourceAuditEntry} from "@mojaloop/auditing-bc-public-types-lib";
+import { SourceAuditEntry} from "@mojaloop/auditing-bc-public-types-lib";
 import crypto from "crypto";
 import {readFileSync} from "fs";
 

@@ -28,7 +28,7 @@
  --------------
  ******/
 
-"use strict"
+"use strict";
 
 
 import {readFileSync, writeFileSync} from "fs";
@@ -85,7 +85,7 @@ export class LocalAuditClientCryptoProvider implements IAuditClientCryptoProvide
                 //cipher: 'aes-256-cbc',   // *optional*
                 //passphrase: 'top secret' // *optional*
             }
-        }
+        };
         const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", keyOptions);
         writeFileSync(filePath, Buffer.from(privateKey.toString()));
     }

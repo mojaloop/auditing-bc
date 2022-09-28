@@ -16,19 +16,22 @@
     "start:auditing-svc": "npm -w @mojaloop/auditing-bc-auditing-svc run start",
     "build": "npm -ws run build",
     "watch": "npm -ws run watch",
-    "clean": "npm -ws run clean",
-    "clean:npm": "rm -Rf node_modules && npm -ws run clean:npm",
+    "clean": "rm -Rf dist && npm -ws --parallel run clean",
+    "clean:npm": "rm -Rf node_modules && npm -ws --parallel run clean:npm",
     "pretest": "echo 'FIX ME'",
     "standard": "npm -ws --no-progress lint'",
-    "lint": "npm -ws -v run lint",
-    "lint:fix": "npm -ws -v run lint:fix",
-    "test:unit": "npm -ws -v run test:unit",
-    "test:coverage": "npm -ws -v run test:coverage",
-    "test:coverage-check": "npm -ws -v run test:coverage-check",
-    "test:integration": "npm -ws -v run test:integration",
-    "audit:check": "npm -ws -v run audit:check",
-    "dep:check": "npm -ws -v run dep:check",
-    "dep:update": "npm -ws -v run dep:update",
+    "lint": "npm -ws run lint",
+    "lint:fix": "npm -ws run lint:fix",
+    "test": "npm run test:unit",
+    "test:unit": "npm -ws --if-present run test:unit",
+    "posttest": "npm run coverage:merge && npm run coverage:gen-report",
+    "coverage:merge": "nyc merge ./coverage/ ./coverage/coverage.json",
+    "coverage:gen-report": "nyc report --reporter=lcov --temp-dir=./coverage",
+    "test:integration": "jest",
+    "posttest:integration": "npm run coverage:merge && npm run coverage:gen-report",
+    "audit:check": "npm -ws  run audit:check",
+    "dep:check": "npm exec ncu -e 2 && npm -ws --parallel run dep:check",
+    "dep:update": "npm exec ncu -e 2 -u && npm -ws --parallel run dep:update",
     "publish:public-types": "npm -w @mojaloop/auditing-bc-public-types-lib run pub",
     "publish:client-lib": "npm -w @mojaloop/auditing-bc-client-lib run pub"
   },
@@ -41,11 +44,12 @@
     "husky": "^7.0.4",
     "jest": "^27.3.1",
     "npm-check-updates": "^12.5.11",
+    "nyc": "^15.1.0",
     "ts-jest": "^27.0.7",
     "typescript": "^4.6.4"
   },
   "workspaces": [
+    "modules/public-types-lib",
     "modules/*"
-  ],
-  "packageManager": "yarn@3.2.2"
+  ]
 }

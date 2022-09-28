@@ -28,7 +28,7 @@
  --------------
  ******/
 
-"use strict"
+"use strict";
 
 import {ILogger} from "@mojaloop/logging-bc-public-types-lib";
 import {IAuditRepo, IAuditAggregateCryptoProvider} from "./domain_interfaces";
@@ -84,7 +84,7 @@ export class AuditingAggregate{
             auditingSvcAppVersion: this._appVersion,
 
             auditingSvcKeyId: ownPubKeyfingerprint
-        }
+        };
 
         let signature = INVALID_SIGNATURE_STR;
         try{
@@ -96,7 +96,7 @@ export class AuditingAggregate{
         const finalEntry : SignedCentralAuditEntry ={
             ...centralAuditEntry,
             auditingSvcSignature: signature
-        }
+        };
 
         try {
             await this._repo.store(finalEntry);

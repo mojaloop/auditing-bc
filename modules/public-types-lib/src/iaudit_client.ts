@@ -31,7 +31,7 @@
  --------------
  ******/
 
-"use strict"
+"use strict";
 
 import {AuditEntryLabel, AuditSecurityContext} from "./audit_types";
 

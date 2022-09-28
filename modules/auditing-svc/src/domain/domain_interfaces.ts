@@ -28,7 +28,7 @@
  --------------
  ******/
 
-"use strict"
+"use strict";
 
 import { SourceAuditEntry } from "@mojaloop/auditing-bc-public-types-lib";
 
