@@ -52,7 +52,7 @@ export class AuditingAggregate{
         this._appVersion = appVersion;
         this._repo = repo;
         this._cryptProvider = cryptProvider;
-        this._logger = logger.createChild((this as any).constructor.name);;
+        this._logger = logger.createChild((this as any).constructor.name);
     }
 
     private _getSourceEntryFromSignedSourceEntry(signedSourceEntry:SignedSourceAuditEntry):SourceAuditEntry{

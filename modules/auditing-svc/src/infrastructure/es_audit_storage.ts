@@ -45,7 +45,7 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
   constructor(opts: ClientOptions, index: string, logger:ILogger) {
     this._clientOps = opts;
     this._index = index;
-    this._logger = logger.createChild((this as any).constructor.name);;
+    this._logger = logger.createChild((this as any).constructor.name);
     this._client = new Client(this._clientOps);
   }
 
