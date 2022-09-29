@@ -35,5 +35,5 @@
 
 import {Service} from "./service";
 Service.start().then(() => {
-    console.log("Service terminated");
+    console.log("Service start complete");
 });

@@ -34,6 +34,7 @@ import {ILogger} from "@mojaloop/logging-bc-public-types-lib";
 import {IAuditRepo, IAuditAggregateCryptoProvider} from "./domain_interfaces";
 import {SignedSourceAuditEntry, SourceAuditEntry} from "@mojaloop/auditing-bc-public-types-lib";
 import {CentralAuditEntry, SignedCentralAuditEntry} from "./server_types";
+import {IRawMessage} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
 
 const INVALID_SIGNATURE_STR = "INVALID";
 
@@ -51,7 +52,7 @@ export class AuditingAggregate{
         this._appVersion = appVersion;
         this._repo = repo;
         this._cryptProvider = cryptProvider;
-        this._logger = logger;
+        this._logger = logger.createChild((this as any).constructor.name);;
     }
 
     private _getSourceEntryFromSignedSourceEntry(signedSourceEntry:SignedSourceAuditEntry):SourceAuditEntry{
@@ -60,11 +61,17 @@ export class AuditingAggregate{
         return sourceEntry;
     }
 
+    async processMessage(message: IRawMessage):Promise<void> {
+        const value = message.value;
+        await this.processSignedSourceAuditEntry(value as SignedSourceAuditEntry);
+    }
+
     async processSignedSourceAuditEntry(signedSourceEntry:SignedSourceAuditEntry):Promise<void>{
         let sourceSigVerified = false;
         try {
             const sourceEntry = this._getSourceEntryFromSignedSourceEntry(signedSourceEntry);
-            sourceSigVerified = await this._cryptProvider.verifySourceSignature(sourceEntry, signedSourceEntry.sourceSignature);
+            const jsonString = JSON.stringify(sourceEntry);
+            sourceSigVerified = await this._cryptProvider.verifySourceSignature(jsonString, sourceEntry.sourceKeyId, signedSourceEntry.sourceSignature);
         }catch(err){
             this._logger.error(err); // log but continue
         }

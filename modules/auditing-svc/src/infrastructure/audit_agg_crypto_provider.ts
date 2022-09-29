@@ -33,26 +33,31 @@
 import {IAuditAggregateCryptoProvider} from "../domain/domain_interfaces";
 import { SourceAuditEntry} from "@mojaloop/auditing-bc-public-types-lib";
 import crypto from "crypto";
-import {readFileSync} from "fs";
+import {readFileSync, writeFileSync} from "fs";
+import {ILogger} from "@mojaloop/logging-bc-public-types-lib";
 
 export class AuditAggregateCryptoProvider implements IAuditAggregateCryptoProvider{
+    private _logger: ILogger;
     private _privateKeyPath: string;
     private _privateKey: Buffer;
     private _privateKeyObj: crypto.KeyObject;
     private _publicKeyObj: crypto.KeyObject;
     private _pubKeyDER: Buffer;
 
-    constructor(privateKeyPath:string){
+    constructor(privateKeyPath:string, logger: ILogger){
         this._privateKeyPath = privateKeyPath;
-
+        this._logger = logger.createChild((this as any).constructor.name);
     }
 
-    init(): Promise<void> {
+    async init(): Promise<void> {
         this._privateKey =  readFileSync(this._privateKeyPath);
 
         this._privateKeyObj =  crypto.createPrivateKey(this._privateKey);
         this._publicKeyObj = crypto.createPublicKey(this._privateKey);
         this._pubKeyDER = this._publicKeyObj.export({ type: "spki", format: "der" });
+
+        const keyFingerprint = await this.getPubKeyFingerprint();
+        this._logger.info(`AuditAggregateCryptoProvider initialised, with key at: ${this._privateKeyPath} and pub key: ${keyFingerprint}`);
 
         return Promise.resolve();
     }
@@ -65,7 +70,7 @@ export class AuditAggregateCryptoProvider implements IAuditAggregateCryptoProvid
     getPubKeyFingerprint(): Promise<string> {
         const pubKeyDER = this._publicKeyObj.export({type: "spki", format: "der"});
         const fingerprint = crypto.createHash("sha1").update(pubKeyDER).digest("hex");
-        console.log(`[Crypto] - getPubKeyFingerprint() - Public Key Fingerprint: ${fingerprint}\n`);
+        this._logger.debug(`getPubKeyFingerprint() - Public Key Fingerprint: ${fingerprint}\n`);
 
         return Promise.resolve(fingerprint);
     }
@@ -77,17 +82,34 @@ export class AuditAggregateCryptoProvider implements IAuditAggregateCryptoProvid
     }
 
 
-    async verifySourceSignature(entry:SourceAuditEntry, signature:string): Promise<boolean> {
+    async verifySourceSignature(jsonStr:string, sourceKeyId:string, signature:string): Promise<boolean> {
         const keyFingerprint = crypto.createHash("sha1").update(this._pubKeyDER).digest("hex");
 
-        if(keyFingerprint !== entry.sourceKeyId){
+        if(keyFingerprint !== sourceKeyId){
             return false;
         }
 
-        const objStr = JSON.stringify(entry);
-        const verified = crypto.createVerify("sha1").update(objStr).end().verify(this._publicKeyObj, Buffer.from(signature, "base64"));
+        const verified = crypto.createVerify("sha1").update(jsonStr).end().verify(this._publicKeyObj, Buffer.from(signature, "base64"));
 
         return verified;
+    }
+
+    static createRsaPrivateKeyFileSync(filePath:string, modulusLength = 2048):void{
+        const keyOptions = {
+            modulusLength: modulusLength,
+            publicKeyEncoding: {
+                type: "spki",
+                format: "pem"
+            },
+            privateKeyEncoding: {
+                type: "pkcs8",
+                format: "pem",
+                //cipher: 'aes-256-cbc',   // *optional*
+                //passphrase: 'top secret' // *optional*
+            }
+        };
+        const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", keyOptions);
+        writeFileSync(filePath, Buffer.from(privateKey.toString()));
     }
 
 }

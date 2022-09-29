@@ -49,7 +49,7 @@ export interface IAuditAggregateCryptoProvider{
     // verifySourceSignature(entry:SignedCentralAuditEntry, pubKey:KeyObject): Promise<void>;
 
     // this should be able to fetch the correct pub key and verify the sig
-    verifySourceSignature(entry:SourceAuditEntry, signature:string): Promise<boolean>;
+    verifySourceSignature(jsonStr:string, sourceKeyId:string, signature:string): Promise<boolean>;
 
     getSha1Signature(strData:string):Promise<string>;
     getPubKeyFingerprint():Promise<string>;

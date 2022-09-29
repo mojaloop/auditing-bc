@@ -95,7 +95,7 @@ describe("Auditing BC integration tests", () => {
     }
 
     // start the service with the same key
-    const aggCrypto = new AuditAggregateCryptoProvider(TMP_KEY_PATH);
+    const aggCrypto = new AuditAggregateCryptoProvider(TMP_KEY_PATH, logger);
     await aggCrypto.init();
 
     const kafkaConsumerOptions = {
@@ -112,12 +112,12 @@ describe("Auditing BC integration tests", () => {
         kafkaConsumer
     );
     await new Promise(f => setTimeout(f, 1000));
-  })
+  });
 
   afterAll(async () => {
     // Cleanup
     await Service.stop();
-  })
+  });
 
 
   test("AuditClient - test send audit entry", async () => {
@@ -140,8 +140,8 @@ describe("Auditing BC integration tests", () => {
   test("test ES storage of audit entry", async () => {
     const elasticOpts = { node: ELASTICSEARCH_URL,
       auth: {
-        username: "elastic",
-        password: process.env.elasticsearch_password || "123@Edd!1234SS",
+        username: ELASTICSEARCH_USERNAME,
+        password: ELASTICSEARCH_PASSWORD,
       },
       tls: {
         ca: process.env.elasticsearch_certificate,

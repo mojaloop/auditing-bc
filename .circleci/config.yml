@@ -37,6 +37,9 @@ executors:
     resource_class: medium
     docker:
       - image: node:16.13
+  default-machine:
+    machine:
+      image: ubuntu-2204:2022.07.1
 
 jobs:
   setup:
