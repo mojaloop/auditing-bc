@@ -58,13 +58,13 @@ const KAFKA_AUDITS_TOPIC = "audits";
 const KAFKA_LOGS_TOPIC = "logs";
 
 const ELASTICSEARCH_URL = process.env["ELASTICSEARCH_URL"] || "https://localhost:9200";
-const ELASTICSEARCH_AUDITS_INDEX = process.env["ELASTICSEARCH_AUDITS_INDEX"] || "mjl-auditing";
+const ELASTICSEARCH_AUDITS_INDEX = process.env["ELASTICSEARCH_AUDITS_INDEX"] || "ml-auditing";
 const ELASTICSEARCH_USERNAME =  process.env["ELASTICSEARCH_USERNAME"] || "elastic";
-const ELASTICSEARCH_PASSWORD =  process.env["ELASTICSEARCH_PASSWORD"] ||  "123@Edd!1234SS";
+const ELASTICSEARCH_PASSWORD =  process.env["ELASTICSEARCH_PASSWORD"] ||  "elasticSearchPas42";
 
 const KAFKA_URL = process.env["KAFKA_URL"] || "localhost:9092";
 
-const AUDIT_KEY_FILE_PATH = process.env["AUDIT_KEY_FILE_PATH"] || "../audit_private_key.pem";
+const AUDIT_KEY_FILE_PATH = process.env["AUDIT_KEY_FILE_PATH"] || "/app/data/audit_private_key.pem";
 
 const kafkaProducerOptions = {
     kafkaBrokerList: KAFKA_URL

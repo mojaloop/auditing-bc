@@ -60,7 +60,7 @@ List of mapping types:
 https://www.elastic.co/guide/en/elasticsearch/reference/8.1/mapping-types.html
 
 ```shell
-curl -X PUT "localhost:9200/mjl-auditing?pretty" -H 'Content-Type: application/json' -d'
+curl -X PUT "localhost:9200/ml-auditing?pretty" -H 'Content-Type: application/json' -d'
 {
   "mappings": {
     "properties": {

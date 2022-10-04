@@ -5,7 +5,7 @@
 # * 'gtrp' and 'gtr' create a GET request with or without query parameters;
 # * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
 # * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
-PUT https://localhost:9200/mjl-auditing
+PUT https://localhost:9200/ml-auditing
 #The mapping Auth[elastic:123@Edd!1234SS]
 Content-Disposition: form-data; name="data"; filename="data.json"
 Content-Type: application/json

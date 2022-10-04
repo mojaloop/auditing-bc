@@ -218,10 +218,10 @@ services:
       retries: 120
 
 #  #Kafka
-#  mjl-kafka-zookeeper:
+#  ml-kafka-zookeeper:
 #    image: 'johnnypark/kafka-zookeeper'
-#    container_name: 'mjl-kafka'
-#    hostname: 'mjl-kakfa'
+#    container_name: 'ml-kafka'
+#    hostname: 'ml-kakfa'
 #    environment:
 #      - ADVERTISED_HOST=127.0.0.1
 #      - NUM_PARTITIONS=8

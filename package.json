@@ -15,6 +15,7 @@
     "prepare": "husky install",
     "start:auditing-svc": "npm -w @mojaloop/auditing-bc-auditing-svc run start",
     "build": "npm -ws run build",
+    "docker:build": "npm run build && docker build . -t \"mojaloop/auditing-bc-auditing-svc\"",
     "watch": "npm -ws run watch",
     "clean": "rm -Rf dist && npm -ws --parallel run clean",
     "clean:npm": "rm -Rf node_modules && npm -ws --parallel run clean:npm",

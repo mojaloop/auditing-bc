@@ -58,6 +58,7 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
   }
 
   async destroy(): Promise<void> {
+    await this._client.close();
     return Promise.resolve();
   }
 

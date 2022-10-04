@@ -11,8 +11,8 @@
 
 {{DESCRIPTION}}
 
-[README](modules/auditing-types-lib/README.md)
-[README](modules/auditing-client-lib/README.md)
+[README](modules/public-types-lib/README.md)
+[README](modules/client-lib/README.md)
 
 #### Run
 
