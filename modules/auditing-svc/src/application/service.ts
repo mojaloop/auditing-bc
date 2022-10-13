@@ -64,7 +64,7 @@ const ELASTICSEARCH_PASSWORD =  process.env["ELASTICSEARCH_PASSWORD"] ||  "elast
 
 const KAFKA_URL = process.env["KAFKA_URL"] || "localhost:9092";
 
-const AUDIT_KEY_FILE_PATH = process.env["AUDIT_KEY_FILE_PATH"] || "/app/data/audit_private_key.pem";
+const AUDIT_KEY_FILE_PATH = process.env["AUDIT_KEY_FILE_PATH"] || "./app/data/audit_private_key.pem";
 
 const kafkaProducerOptions = {
     kafkaBrokerList: KAFKA_URL
