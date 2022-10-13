@@ -188,7 +188,7 @@ docker-compose down -v
 ```
 
 
-After running the docker-compose-infra we can start auditing-bc:
+## After running the docker-compose-infra we can start auditing-bc:
 ```shell
 npm run start:auditing-svc
 ```
