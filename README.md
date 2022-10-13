@@ -34,60 +34,93 @@ nvm use
 ### Install Dependencies
 
 ```bash
-npm install 
-```
-
-#### Docker Image for Kafka
-```bash
-docker run -d -p 2181:2181 -p 9092:9092 -e ADVERTISED_HOST=127.0.0.1 --name kafka -e NUM_PARTITIONS=8 johnnypark/kafka-zookeeper
-```
-
-#### Docker Image for Kafka on Apple M1 Arch:
-> The steps below need to be taken in order to run the `kafka-zookeeper` on Apple M1 ARM processors;  
-1. Clone `https://github.com/hey-johnnypark/docker-kafka-zookeeper`
-2. Modify the `Dockerfile` root image to FROM `alpine:3.15.0` (previously `3.9.2`)
-3. Modify the build.sh to;
-```text
-docker build -t johnnypark/kafka-zookeeper:m1 --no-cache .
-```
-4. Run the following to start the image;
-```shell
-docker run -d -p 2181:2181 -p 9092:9092 -e ADVERTISED_HOST=127.0.0.1 --name kafka -e NUM_PARTITIONS=8 johnnypark/kafka-zookeeper:m1
-```
-
-#### Docker Compose for Auditing
-> Startup, Kafka, Elasticsearch and Kibana. 
-
-```shell
-docker-compose up -d
+npm install
 ```
 
 ## Build
 
 ```bash
-npm install
 npm run build
 ```
 
-## Run
-
-```bash
-npm run start
-```
-
 ## Unit Tests
+
 ```bash
 npm run test:unit
 ```
 
-## Integration Tests
+## Run the services 
 
-Ensure the Kafka `zookeeper` is running prior to running the integration tests;
+### Startup supporting services
+
+Use https://github.com/mojaloop/platform-shared-tools/tree/main/packages/deployment/docker-compose-infra
+
+
+To startup Kafka, MongoDB, Elasticsearch and Kibana, follow the steps below(executed in docker-compose-infra/):   
+
+1. Create a sub-directory called `exec` inside the `docker-compose-infra` (this) directory, and navigate to that directory.
+
+
 ```shell
-docker run -d -p 2181:2181 -p 9092:9092 -e ADVERTISED_HOST=127.0.0.1 --name kafka -e NUM_PARTITIONS=8 johnnypark/kafka-zookeeper
+mkdir exec 
+cd exec
 ```
 
+2. Create the following directories as sub-directories of the `docker-compose/exec` directory:
+* `certs`
+* `esdata01`
+* `kibanadata`
+* `logs`
+
+```shell
+mkdir {certs,esdata01,kibanadata,logs}
+```
+
+3. Copy the `.env.sample` to the exec dir:
+```shell
+cp ../.env.sample ./.env
+```
+
+4. Review the contents of the `.env` file
+
+5. Ensure `vm.max_map_count` is set to at least `262144`: Example to apply property on live system:
+```shell
+sysctl -w vm.max_map_count=262144 # might require sudo
+```
+
+### Start Infrastructure Containers
+
+Start the docker containers using docker-compose up (in the exec dir)
+```shell
+docker-compose -f ../docker-compose-infra.yml --env-file ./.env up -d
+```
+
+
+To view the logs of the infrastructure containers, run:
+```shell
+docker-compose -f ../docker-compose-infra.yml --env-file ./.env logs -f
+```
+
+To stop the infrastructure containers, run:
+```shell
+docker-compose -f ../docker-compose-infra.yml --env-file ./.env stop
+```
+
+After running the docker-compose-infra we can start auditing-bc:
+```shell
+npm run start:auditing-svc
+```
+
+## Integration Tests
 ```bash
 npm run test:integration
 ```
+
+## Troubleshoot 
+
+### Unable to load dlfcn_load
+```bash
+error:25066067:DSO support routines:dlfcn_load:could not load the shared library
+```
+Fix: https://github.com/mojaloop/security-bc.git  `export OPENSSL_CONF=/dev/null`
 
