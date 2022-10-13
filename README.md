@@ -150,7 +150,7 @@ curl -i --insecure -X PUT "https://localhost:9200/ml-auditing/" -u "elastic" -H 
 **NOTE:** The master/source for the mappings files is the respective repositories: [logging-bc](https://github.com/mojaloop/logging-bc/blob/main/docker-compose/es_mappings.json) and [auditing-bc](https://github.com/mojaloop/auditing-bc/blob/main/docker-compose/es_mappings.json).  
 
 We can see the indexes in ElasticSearch API:
-https://github.com/mojaloop/auditing-bc/blob/feature/2967-shared-tools-instruction/images/index.png
+(https://github.com/mojaloop/auditing-bc/blob/feature/2967-shared-tools-instruction/images/index.png)
 
 ##### Additional Information on Elastic mappings
 https://www.elastic.co/guide/en/elasticsearch/reference/8.1/explicit-mapping.html
