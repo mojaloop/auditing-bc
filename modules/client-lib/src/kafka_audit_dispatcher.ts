@@ -43,7 +43,7 @@ export class KafkaAuditClientDispatcher implements IAuditClientDispatcher {
 
     constructor(producerOptions: MLKafkaRawProducerOptions, kafkaTopic: string, logger: ILogger) {
         this._kafkaTopic = kafkaTopic;
-        this._logger = logger;
+        this._logger = logger.createChild(this.constructor.name);
         this._kafkaProducer = new MLKafkaRawProducer(producerOptions, this._logger);
     }
 
