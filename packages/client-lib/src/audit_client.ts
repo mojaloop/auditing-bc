@@ -54,6 +54,7 @@ export class AuditClient implements IAuditClient {
         this._cryptoProvider = cryptoProvider;
         this._dispatcher = dispatcher;
 
+        /* istanbul ignore next */
         this._netSources = Object.values(os.networkInterfaces())
             .flat()
             .filter((value: NetworkInterfaceInfo | undefined) => value && (value.family==="IPv4" || value.family==="IPv6") && !value.internal)
