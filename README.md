@@ -11,8 +11,8 @@
 
 {{DESCRIPTION}}
 
-[README](modules/public-types-lib/README.md)
-[README](modules/client-lib/README.md)
+[README](packages/public-types-lib/README.md)
+[README](packages/client-lib/README.md)
 
 #### Run
 
@@ -49,20 +49,20 @@ npm run build
 npm run test:unit
 ```
 
-## Run the services 
+## Run the services
 
 ### Startup supporting services
 
 Use https://github.com/mojaloop/platform-shared-tools/tree/main/packages/deployment/docker-compose-infra
 
 
-To startup Kafka, MongoDB, Elasticsearch and Kibana, follow the steps below(executed in docker-compose-infra/):   
+To startup Kafka, MongoDB, Elasticsearch and Kibana, follow the steps below(executed in docker-compose-infra/):
 
 1. Create a sub-directory called `exec` inside the `docker-compose-infra` (this) directory, and navigate to that directory.
 
 
 ```shell
-mkdir exec 
+mkdir exec
 cd exec
 ```
 
@@ -139,7 +139,7 @@ Execute this in the directory containing the files `es_mappings_logging.json` an
 **When asked, enter the password for the `elastic` user in the `.env` file.**
 
 ```shell
-# Create the logging index 
+# Create the logging index
 curl -i --insecure -X PUT "https://localhost:9200/ml-logging/" -u "elastic" -H "Content-Type: application/json" --data-binary "@es_mappings_logging.json"
 ```
 ```shell
@@ -147,7 +147,7 @@ curl -i --insecure -X PUT "https://localhost:9200/ml-logging/" -u "elastic" -H "
 curl -i --insecure -X PUT "https://localhost:9200/ml-auditing/" -u "elastic" -H "Content-Type: application/json" --data-binary "@es_mappings_auditing.json"
 ```
 
-**NOTE:** The master/source for the mappings files is the respective repositories: [logging-bc](https://github.com/mojaloop/logging-bc/blob/main/docker-compose/es_mappings.json) and [auditing-bc](https://github.com/mojaloop/auditing-bc/blob/main/docker-compose/es_mappings.json).  
+**NOTE:** The master/source for the mappings files is the respective repositories: [logging-bc](https://github.com/mojaloop/logging-bc/blob/main/docker-compose/es_mappings.json) and [auditing-bc](https://github.com/mojaloop/auditing-bc/blob/main/docker-compose/es_mappings.json).
 
 We can see the indexes in ElasticSearch API:
 
@@ -159,7 +159,7 @@ https://www.elastic.co/guide/en/elasticsearch/reference/8.1/mapping-types.html
 
 ## Setup Kibana Dashboards Setup
 
-Once the mappings are installed, it is time to import the prebuilt Kibana objects for the _DataView_ and the _search_. 
+Once the mappings are installed, it is time to import the prebuilt Kibana objects for the _DataView_ and the _search_.
 
 1. Open Kibana (login with credentials in .env file)
 2. Navigate to **(top left burger icon) -> Management / Stack Management -> Kibana / Saved Objects**
@@ -171,7 +171,7 @@ Once the mappings are installed, it is time to import the prebuilt Kibana object
 
 ## Viewing Kibana Logs
 
-Go to **(top left burger icon) -> Analytics / Discover**, and then use the Open option on the top right to open the imported `"MojaloopDefaultLogView"` view.   
+Go to **(top left burger icon) -> Analytics / Discover**, and then use the Open option on the top right to open the imported `"MojaloopDefaultLogView"` view.
 
 ## Viewing Kibana Audits
 
@@ -202,7 +202,7 @@ npm run start:auditing-svc
 npm run test:integration
 ```
 
-## Troubleshoot 
+## Troubleshoot
 
 ### Unable to load dlfcn_load
 ```bash

@@ -1,0 +1,54 @@
+{
+    "name": "@mojaloop/auditing-bc-auditing-svc",
+    "version": "0.1.1",
+    "description": "Mojaloop auditing server implementation",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/mojaloop/auditing-bc/tree/main/packages/auditing-svc",
+    "bugs": {
+        "url": "https://github.com/mojaloop/auditing-bc/issues#readme"
+    },
+    "contributors": [
+        "Jason Bruwer <jason.bruwer@coil.com>"
+    ],
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "/dist"
+    ],
+    "private": true,
+    "scripts": {
+        "start": "npm run service",
+        "start:dev": "export AUDIT_KEY_FILE_PATH=\"../../test_keys/3_private.pem\" npm run build && npm run service",
+        "service": "node dist/application/index.js",
+        "build": "tsc",
+        "watch": "tsc -w",
+        "clean": "npm run clean:npm; npm run clean:dist",
+        "clean:dist": "rm -rf dist",
+        "clean:npm": "rm -rf node_modules",
+        "pretest": "npm run build",
+        "standard": "npm run lint",
+        "lint": "npm run build && npx eslint ./src",
+        "lint:fix": "npm run build && npx eslint ./src --fix",
+        "test:unit": "jest --passWithNoTests --testMatch '**/test/unit/**/*.test.ts'",
+        "audit:resolve": "SHELL=sh resolve-audit",
+        "audit:check": "SHELL=sh check-audit",
+        "dep:check": "ncu -e 2",
+        "dep:update": "ncu -u"
+    },
+    "dependencies": {
+        "@elastic/elasticsearch": "^8.6.0",
+        "@mojaloop/auditing-bc-public-types-lib": "~0.0.12",
+        "@mojaloop/logging-bc-client-lib": "~0.1.19",
+        "@mojaloop/logging-bc-public-types-lib": "~0.1.16",
+        "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "~0.3.34",
+        "@mojaloop/platform-shared-lib-messaging-types-lib": "~0.2.73"
+    },
+    "devDependencies": {
+        "@types/node": "^18.15.3",
+        "eslint": "^8.36.0",
+        "jest": "^29.5.0",
+        "npm-check-updates": "~16.7.12",
+        "ts-jest": "^29.0.5",
+        "typescript": "^5.0.2"
+    }
+}

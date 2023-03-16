@@ -124,6 +124,6 @@ devspace*
 yarn.lock
 !test_keys
 
-/modules/client-lib/test/tmp_key_file
+/packages/client-lib/test/tmp_key_file
 tmp_key_file
 *.pem

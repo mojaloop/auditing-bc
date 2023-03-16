@@ -43,7 +43,7 @@ import {existsSync} from "fs";
 import { Client } from "@elastic/elasticsearch";
 
 // direct imports from the svc module
-import {Service} from "../../modules/auditing-svc/src/application/service";
+import {Service} from "../../packages/auditing-svc/src/application/service";
 
 import {
   AuditAggregateCryptoProvider
