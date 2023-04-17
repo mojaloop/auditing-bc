@@ -70,7 +70,7 @@ export class AuditAggregateCryptoProvider implements IAuditAggregateCryptoProvid
     getPubKeyFingerprint(): Promise<string> {
         const pubKeyDER = this._publicKeyObj.export({type: "spki", format: "der"});
         const fingerprint = crypto.createHash("sha1").update(pubKeyDER).digest("hex");
-        this._logger.debug(`getPubKeyFingerprint() - Public Key Fingerprint: ${fingerprint}\n`);
+        //this._logger.debug(`getPubKeyFingerprint() - Public Key Fingerprint: ${fingerprint}\n`);
 
         return Promise.resolve(fingerprint);
     }

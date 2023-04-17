@@ -144,7 +144,7 @@ export class Service {
         this.kafkaConsumer.setCallbackFn(this.agg.processMessage.bind(this.agg));
 
         await this.kafkaConsumer.connect();
-        await this.kafkaConsumer.start();
+        await this.kafkaConsumer.startAndWaitForRebalance();
 
         this.logger.info(`Auditing Service service v: ${APP_VERSION} initialised`);
     }

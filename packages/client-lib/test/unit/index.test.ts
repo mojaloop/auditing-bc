@@ -38,7 +38,7 @@ import {
     LocalAuditClientCryptoProvider,
 } from "../../src/";
 
-import {ConsoleLogger, LogLevel} from "@mojaloop/logging-bc-public-types-lib";
+import {ConsoleLogger} from "@mojaloop/logging-bc-public-types-lib";
 import {AuditSecurityContext} from "@mojaloop/auditing-bc-public-types-lib";
 import {MockAuditClientDispatcher} from "./mock_audit_dispatcher";
 import {existsSync} from "fs";

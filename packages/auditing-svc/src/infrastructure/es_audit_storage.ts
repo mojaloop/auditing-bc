@@ -38,14 +38,14 @@ import {SignedCentralAuditEntry} from "../domain/server_types";
 
 export class ElasticsearchAuditStorage implements IAuditRepo {
   private _client: Client;
-  private _clientOps: ClientOptions;
-  private _index: string;
+  private readonly _clientOps: ClientOptions;
+  private readonly _index: string;
   private _logger: ILogger;
 
   constructor(opts: ClientOptions, index: string, logger:ILogger) {
     this._clientOps = opts;
     this._index = index;
-    this._logger = logger.createChild((this as any).constructor.name);
+    this._logger = logger.createChild(this.constructor.name);
     this._client = new Client(this._clientOps);
   }
 
@@ -65,30 +65,10 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
 
   async store(entry:SignedCentralAuditEntry): Promise<void>{
     try {
-        //const doc:any = {}
-        // const doc:any = {
-        //   level: entry.level,
-        //   level_numeric: Object.keys(LogLevel).indexOf(itm.level.toUpperCase()),
-        //   timestamp: itm.timestamp,
-        //   bcName: itm.bcName,
-        //   appName: itm.appName,
-        //   appVersion: itm.appVersion,
-        //   message: "" + itm.message,
-        //   component: itm.component
-        // };
-        // if(itm.meta && itm.meta.error){
-        //   doc.error = itm.meta.error
-        // }
-        // if(itm.meta){
-        //   doc.meta = itm.meta;
-        // }
-
         await this._client.index({
           index: this._index,
           document: entry
         });
-        this._logger.debug("ElasticsearchAuditStorage stored doc");
-
     } catch (err) {
       this._logger.error("ElasticsearchAuditStorage error", err);
     }

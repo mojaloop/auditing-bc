@@ -8,6 +8,7 @@
         "url": "https://github.com/mojaloop/auditing-bc/issues#readme"
     },
     "contributors": [
+        "Pedro Sousa Barreto <pedrosousabarreto@gmail.com>",
         "Jason Bruwer <jason.bruwer@coil.com>"
     ],
     "main": "./dist/index.js",
@@ -16,6 +17,9 @@
         "/dist"
     ],
     "private": true,
+    "mojaloop": {
+        "publish_to_dockerhub": true
+    },
     "scripts": {
         "start": "npm run service",
         "start:dev": "npm run build && AUDIT_KEY_FILE_PATH=./dist/tmp_key_file npm run service",
@@ -36,19 +40,19 @@
         "dep:update": "ncu -u"
     },
     "dependencies": {
-        "@elastic/elasticsearch": "^8.6.0",
-        "@mojaloop/auditing-bc-public-types-lib": "~0.0.12",
-        "@mojaloop/logging-bc-client-lib": "~0.1.19",
-        "@mojaloop/logging-bc-public-types-lib": "~0.1.16",
-        "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "~0.3.34",
-        "@mojaloop/platform-shared-lib-messaging-types-lib": "~0.2.73"
+        "@elastic/elasticsearch": "^8.7.0",
+        "@mojaloop/auditing-bc-public-types-lib": "~0.0.13",
+        "@mojaloop/logging-bc-client-lib": "~0.1.23",
+        "@mojaloop/logging-bc-public-types-lib": "~0.1.19",
+        "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "~0.3.39",
+        "@mojaloop/platform-shared-lib-messaging-types-lib": "~0.2.78"
     },
     "devDependencies": {
-        "@types/node": "^18.15.3",
-        "eslint": "^8.36.0",
+        "@types/node": "^18.15.11",
+        "eslint": "^8.38.0",
         "jest": "^29.5.0",
-        "npm-check-updates": "~16.7.12",
-        "ts-jest": "^29.0.5",
+        "npm-check-updates": "~16.10.8",
+        "ts-jest": "^29.1.0",
         "typescript": "^5.0.2"
     }
 }

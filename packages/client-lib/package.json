@@ -8,6 +8,7 @@
     "url": "https://github.com/mojaloop/auditing-bc/issues#readme"
   },
   "contributors": [
+    "Pedro Sousa Barreto <pedrosousabarreto@gmail.com>",
     "Jason Bruwer <jason.bruwer@coil.com>"
   ],
   "main": "./dist/index.js",
@@ -32,17 +33,17 @@
     "dep:update": "ncu -u"
   },
   "devDependencies": {
-    "eslint": "^8.36.0",
+    "eslint": "^8.38.0",
     "jest": "^29.5.0",
-    "npm-check-updates": "~16.7.12",
-    "ts-jest": "^29.0.5",
+    "npm-check-updates": "~16.10.8",
+    "ts-jest": "^29.1.0",
     "typescript": "^5.0.2"
   },
   "dependencies": {
-    "@mojaloop/platform-shared-lib-messaging-types-lib": "~0.2.73",
+    "@mojaloop/platform-shared-lib-messaging-types-lib": "~0.2.78",
     "@mojaloop/auditing-bc-public-types-lib": "*",
-    "@mojaloop/logging-bc-client-lib": "~0.1.19",
-    "@mojaloop/logging-bc-public-types-lib": "~0.1.16",
-    "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "~0.3.34"
+    "@mojaloop/logging-bc-client-lib": "~0.1.23",
+    "@mojaloop/logging-bc-public-types-lib": "~0.1.19",
+    "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "~0.3.39"
   }
 }
