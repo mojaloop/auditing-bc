@@ -40,6 +40,7 @@ import {
     MLKafkaRawConsumerOutputType
 } from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
 import {KafkaLogger} from "@mojaloop/logging-bc-client-lib";
+import process from "process";
 import {AuditingAggregate} from "../domain/auditing_agg";
 import {IAuditAggregateCryptoProvider, IAuditRepo} from "../domain/domain_interfaces";
 import {AuditAggregateCryptoProvider} from "../infrastructure/audit_agg_crypto_provider";
@@ -64,7 +65,7 @@ const ELASTICSEARCH_PASSWORD =  process.env["ELASTICSEARCH_PASSWORD"] ||  "elast
 
 const KAFKA_URL = process.env["KAFKA_URL"] || "localhost:9092";
 
-const AUDIT_KEY_FILE_PATH = process.env["AUDIT_KEY_FILE_PATH"] || "./app/data/audit_private_key.pem";
+const AUDIT_KEY_FILE_PATH = process.env["AUDIT_KEY_FILE_PATH"] || "/app/data/audit_private_key.pem";
 
 const kafkaProducerOptions = {
     kafkaBrokerList: KAFKA_URL
