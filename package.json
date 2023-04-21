@@ -32,7 +32,6 @@
     "coverage:merge": "nyc merge ./coverage/ ./coverage/coverage.json",
     "coverage:gen-report": "nyc report --reporter=lcov --reporter=text --temp-dir=./coverage",
     "test:integration": "jest",
-    "posttest:integration": "npm run coverage:merge && npm run coverage:gen-report",
     "audit:check": "npm -ws  run audit:check",
     "dep:check": "ncu -e 2; npm -ws run dep:check",
     "dep:update": "ncu -e 2 -u; npm -ws run dep:update"
