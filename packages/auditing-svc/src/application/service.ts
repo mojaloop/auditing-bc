@@ -45,7 +45,6 @@ import {AuditingAggregate} from "../domain/auditing_agg";
 import {IAuditAggregateCryptoProvider, IAuditRepo} from "../domain/domain_interfaces";
 import {AuditAggregateCryptoProvider} from "../infrastructure/audit_agg_crypto_provider";
 import {ElasticsearchAuditStorage} from "../infrastructure/es_audit_storage";
-import {SignedSourceAuditEntry} from "@mojaloop/auditing-bc-public-types-lib";
 import {IRawMessageConsumer} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib/dist/raw/raw_types";
 import {existsSync} from "fs";
 
