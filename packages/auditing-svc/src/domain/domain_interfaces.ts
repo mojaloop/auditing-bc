@@ -38,6 +38,8 @@ export interface IAuditRepo{
     init():Promise<void>;
     destroy():Promise<void>;
     store(entry:SignedCentralAuditEntry): Promise<void>;
+
+    getEntries(): Promise<SignedCentralAuditEntry[]>;
 }
 
 

@@ -37,40 +37,63 @@ import {IAuditRepo} from "../domain/domain_interfaces";
 import {SignedCentralAuditEntry} from "../domain/server_types";
 
 export class ElasticsearchAuditStorage implements IAuditRepo {
-  private _client: Client;
-  private readonly _clientOps: ClientOptions;
-  private readonly _index: string;
-  private _logger: ILogger;
+    private _client: Client;
+    private readonly _clientOps: ClientOptions;
+    private readonly _index: string;
+    private _logger: ILogger;
 
-  constructor(opts: ClientOptions, index: string, logger:ILogger) {
-    this._clientOps = opts;
-    this._index = index;
-    this._logger = logger.createChild(this.constructor.name);
-    this._client = new Client(this._clientOps);
-  }
-
-  async init(): Promise<void> {
-    this._logger.info("ElasticsearchAuditStorage initialised");
-
-    // test the connection
-    const info = await this._client.info();
-    this._logger.info(`Connected to elasticsearch instance with name: ${info.name}, and cluster name: ${info.cluster_name}`);
-  }
-
-  async destroy(): Promise<void> {
-    await this._client.close();
-    return Promise.resolve();
-  }
-
-
-  async store(entry:SignedCentralAuditEntry): Promise<void>{
-    try {
-        await this._client.index({
-          index: this._index,
-          document: entry
-        });
-    } catch (err) {
-      this._logger.error("ElasticsearchAuditStorage error", err);
+    constructor(opts: ClientOptions, index: string, logger: ILogger) {
+        this._clientOps = opts;
+        this._index = index;
+        this._logger = logger.createChild(this.constructor.name);
+        this._client = new Client(this._clientOps);
     }
-  }
+
+    async init(): Promise<void> {
+        this._logger.info("ElasticsearchAuditStorage initialised");
+
+        // test the connection
+        const info = await this._client.info();
+        this._logger.info(`Connected to elasticsearch instance with name: ${info.name}, and cluster name: ${info.cluster_name}`);
+    }
+
+    async destroy(): Promise<void> {
+        await this._client.close();
+        return Promise.resolve();
+    }
+
+
+    async store(entry: SignedCentralAuditEntry): Promise<void> {
+        try {
+            await this._client.index({
+                index: this._index,
+                document: entry
+            });
+        } catch (err) {
+            this._logger.error("ElasticsearchAuditStorage error", err);
+        }
+    }
+
+    async getEntries(): Promise<any> {
+        const retList: SignedCentralAuditEntry[] = [];
+
+        try {
+            const result = await this._client.search({
+                index: this._index,
+                query: {
+                    match_all: {}
+                }
+            });
+
+            if (result && result.hits && result.hits.hits) {
+                result.hits.hits.forEach(value => {
+                    retList.push(value._source as SignedCentralAuditEntry);
+                });
+            }
+        } catch (err) {
+            this._logger.error(err);
+        }
+
+        return Promise.resolve(retList);
+    }
 }
