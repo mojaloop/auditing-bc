@@ -35,6 +35,9 @@ import {Client} from "@elastic/elasticsearch";
 import {ClientOptions} from "@elastic/elasticsearch/lib/client";
 import {IAuditRepo} from "../domain/domain_interfaces";
 import {SignedCentralAuditEntry} from "../domain/server_types";
+import {QueryDslQueryContainer} from "@elastic/elasticsearch/lib/api/types";
+
+const MAX_ENTRIES_PER_PAGE = 100;
 
 export class ElasticsearchAuditStorage implements IAuditRepo {
     private _client: Client;
@@ -74,15 +77,44 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
         }
     }
 
-    async getEntries(): Promise<any> {
+    async searchEntries(
+        userId:string|null,
+        sourceBcName:string|null,
+        sourceAppName:string|null,
+        actionType:string|null,
+        actionSuccessful:boolean|null,
+        startDate:number|null,
+        endDate:number|null
+    ): Promise<SignedCentralAuditEntry[]> {
         const retList: SignedCentralAuditEntry[] = [];
+
+        let query:QueryDslQueryContainer = { match_all: {} };
+        const conditions = [];
+
+
+        if(userId) conditions.push({match: {"securityContext.userId": userId}});
+        if(sourceBcName) conditions.push({match: {"sourceBcName": sourceBcName}});
+        if(sourceAppName) conditions.push({match: {"sourceAppName": sourceAppName}});
+        if(actionType) conditions.push({match: {"actionType": actionType}});
+        if(actionSuccessful != null) conditions.push({match: {"actionSuccessful": actionSuccessful}});
+
+
+        if(conditions.length > 0) {
+            query = {
+                bool: {
+                    must: conditions
+                }
+            };
+        }
 
         try {
             const result = await this._client.search({
                 index: this._index,
-                query: {
-                    match_all: {}
-                }
+                // keep the search results "scrollable" for 30 seconds
+                // scroll: "30s",
+                // for the sake of this example, we will get only one result per search
+                size: MAX_ENTRIES_PER_PAGE,
+                query: query
             });
 
             if (result && result.hits && result.hits.hits) {

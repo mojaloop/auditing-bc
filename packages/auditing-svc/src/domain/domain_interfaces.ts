@@ -39,7 +39,15 @@ export interface IAuditRepo{
     destroy():Promise<void>;
     store(entry:SignedCentralAuditEntry): Promise<void>;
 
-    getEntries(): Promise<SignedCentralAuditEntry[]>;
+    searchEntries(
+        userId:string|null,
+        sourceBcName:string|null,
+        sourceAppName:string|null,
+        actionType:string|null,
+        actionSuccessful:boolean|null,
+        startDate:number|null,
+        endDate:number|null
+    ): Promise<SignedCentralAuditEntry[]>;
 }
 
 

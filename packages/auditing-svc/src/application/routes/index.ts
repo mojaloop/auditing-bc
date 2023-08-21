@@ -35,6 +35,7 @@ import { ILogger } from "@mojaloop/logging-bc-public-types-lib";
 import { TokenHelper } from "@mojaloop/security-bc-client-lib";
 import express from "express";
 import {IAuditRepo} from "../../domain/domain_interfaces";
+import {SignedCentralAuditEntry} from "../../domain/server_types";
 
 declare module "express-serve-static-core" {
     export interface Request {
@@ -150,10 +151,28 @@ export class AuditMainRoutes {
 
 
     private async _getEntries(req: express.Request, res: express.Response){
-        try{
-            const ret = await this._repo.getEntries();
-            res.send(ret);
+        const sourceBcName = req.query.sourceBcName as string || null;
+        const sourceAppName = req.query.sourceAppName as string || null;
+        const actionType = req.query.actionType as string || null;
+        const actionSuccessfulStr = req.query.actionSuccessful as string || null;
+        const actionSuccessful:boolean | null = actionSuccessfulStr ? Boolean(actionSuccessfulStr) : null;
+        const userId = req.query.userId as string || null;
+        const startDateStr = req.query.startDate as string || req.query.startdate as string;
+        const startDate = startDateStr ? parseInt(startDateStr) : null;
+        const endDateStr = req.query.endDate as string || req.query.enddate as string;
+        const endDate = endDateStr ? parseInt(endDateStr) : null;
 
+        try{
+            const ret: SignedCentralAuditEntry[] = await this._repo.searchEntries(
+                userId,
+                sourceBcName,
+                sourceAppName,
+                actionType,
+                actionSuccessful,
+                startDate,
+                endDate
+            );
+            res.send(ret);
         }   catch (err: any) {
             if (this._handleUnauthorizedError(err, res)) return;
 
