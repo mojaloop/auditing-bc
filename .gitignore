@@ -127,3 +127,6 @@ yarn.lock
 /packages/client-lib/test/tmp_key_file
 tmp_key_file
 *.pem
+
+# VSCode
+.vscode
