@@ -61,7 +61,8 @@ export class AuditMainRoutes {
         // inject authentication - all requests require a valid token
         //this._mainRouter.use(this._authenticationMiddleware.bind(this)); // TODO re-enable
 
-        this.mainRouter.get("/entries/", this._getEntries.bind(this));
+        this.mainRouter.get("/entries/", this._getSearchEntries.bind(this));
+        this.mainRouter.get("/searchKeywords/", this._getSearchKeywords.bind(this));
     }
 
     get logger(): ILogger {
@@ -150,7 +151,8 @@ export class AuditMainRoutes {
     }
 
 
-    private async _getEntries(req: express.Request, res: express.Response){
+    private async _getSearchEntries(req: express.Request, res: express.Response){
+        // const text = req.query.text as string || null;
         const sourceBcName = req.query.sourceBcName as string || null;
         const sourceAppName = req.query.sourceAppName as string || null;
         const actionType = req.query.actionType as string || null;
@@ -164,6 +166,7 @@ export class AuditMainRoutes {
 
         try{
             const ret: SignedCentralAuditEntry[] = await this._repo.searchEntries(
+                // text,
                 userId,
                 sourceBcName,
                 sourceAppName,
@@ -172,6 +175,21 @@ export class AuditMainRoutes {
                 startDate,
                 endDate
             );
+            res.send(ret);
+        }   catch (err: any) {
+            if (this._handleUnauthorizedError(err, res)) return;
+
+            this.logger.error(err);
+            res.status(500).json({
+                status: "error",
+                msg: (err as Error).message,
+            });
+        }
+    }
+
+    private async _getSearchKeywords(req: express.Request, res: express.Response){
+        try{
+            const ret = await this._repo.getSearchKeywords();
             res.send(ret);
         }   catch (err: any) {
             if (this._handleUnauthorizedError(err, res)) return;

@@ -40,6 +40,7 @@ export interface IAuditRepo{
     store(entry:SignedCentralAuditEntry): Promise<void>;
 
     searchEntries(
+        // text:string|null,
         userId:string|null,
         sourceBcName:string|null,
         sourceAppName:string|null,
@@ -48,6 +49,8 @@ export interface IAuditRepo{
         startDate:number|null,
         endDate:number|null
     ): Promise<SignedCentralAuditEntry[]>;
+
+    getSearchKeywords():Promise<{fieldName:string, distinctTerms:string[]}[]>
 }
 
 

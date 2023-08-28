@@ -31,7 +31,7 @@
 "use strict";
 
 import {ILogger} from "@mojaloop/logging-bc-public-types-lib";
-import {Client} from "@elastic/elasticsearch";
+import {Client, errors} from "@elastic/elasticsearch";
 import {ClientOptions} from "@elastic/elasticsearch/lib/client";
 import {IAuditRepo} from "../domain/domain_interfaces";
 import {SignedCentralAuditEntry} from "../domain/server_types";
@@ -78,6 +78,7 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
     }
 
     async searchEntries(
+        // text:string|null,
         userId:string|null,
         sourceBcName:string|null,
         sourceAppName:string|null,
@@ -92,6 +93,7 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
         const conditions = [];
 
 
+        // if(text) conditions.push({match: {"securityContext.userId": text}});
         if(userId) conditions.push({match: {"securityContext.userId": userId}});
         if(sourceBcName) conditions.push({match: {"sourceBcName": sourceBcName}});
         if(sourceAppName) conditions.push({match: {"sourceAppName": sourceAppName}});
@@ -128,4 +130,73 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
 
         return Promise.resolve(retList);
     }
+
+    async getSearchKeywords():Promise<{fieldName:string, distinctTerms:string[]}[]>{
+        const retObj:{fieldName:string, distinctTerms:string[]}[] = [];
+
+        try {
+            const result:any = await this._client.search({
+                "aggs": {
+                    "sourceBcName": {
+                        "terms": {
+                            "field": "sourceBcName"
+                        }
+                    },"sourceAppName": {
+                        "terms": {
+                            "field": "sourceAppName"
+                        }
+                    },"actionType": {
+                        "terms": {
+                            "field": "actionType"
+                        }
+                    }
+                },
+                "_source": false
+            });
+
+            if (result && result.aggregations) {
+                if(result.aggregations["actionType"] && result.aggregations["actionType"].buckets){
+                    const actionType:{fieldName:string, distinctTerms:string[]} = {
+                        fieldName: "actionType",
+                        distinctTerms: []
+                    };
+
+                    for(const bucket of result.aggregations["actionType"].buckets){
+                        actionType.distinctTerms.push(bucket.key);
+                    }
+                    retObj.push(actionType);
+                }
+
+                if(result.aggregations["sourceBcName"] && result.aggregations["sourceBcName"].buckets){
+                    const sourceBcName:{fieldName:string, distinctTerms:string[]} = {
+                        fieldName: "sourceBcName",
+                        distinctTerms: []
+                    };
+
+                    for(const bucket of result.aggregations["sourceBcName"].buckets){
+                        sourceBcName.distinctTerms.push(bucket.key);
+                    }
+                    retObj.push(sourceBcName);
+                }
+
+                if(result.aggregations["sourceAppName"] && result.aggregations["sourceAppName"].buckets){
+                    const sourceAppName:{fieldName:string, distinctTerms:string[]} = {
+                        fieldName: "sourceAppName",
+                        distinctTerms: []
+                    };
+
+                    for(const bucket of result.aggregations["sourceAppName"].buckets){
+                        sourceAppName.distinctTerms.push(bucket.key);
+                    }
+                    retObj.push(sourceAppName);
+                }
+
+            }
+        } catch (err) {
+            this._logger.error(err);
+        }
+
+        return Promise.resolve(retObj);
+    }
 }
+
