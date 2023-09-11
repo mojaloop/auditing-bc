@@ -33,6 +33,12 @@
 
 "use strict";
 
+
+import {AuditMainRoutes} from "./routes";
+
+
+import express, {Express} from "express";
+import {Server} from "net";
 import {ILogger, LogLevel} from "@mojaloop/logging-bc-public-types-lib";
 import {
     IRawMessage,
@@ -48,9 +54,13 @@ import {ElasticsearchAuditStorage} from "../infrastructure/es_audit_storage";
 import {IRawMessageConsumer} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib/dist/raw/raw_types";
 import {existsSync} from "fs";
 
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const packageJSON = require("../../package.json");
+
 const BC_NAME = "auditing-bc";
 const APP_NAME = "auditing-svc";
-const APP_VERSION = process.env.npm_package_version || "0.0.0";
+const APP_VERSION = packageJSON.version;
 const PRODUCTION_MODE = process.env["PRODUCTION_MODE"] || false;
 const LOG_LEVEL:LogLevel = process.env["LOG_LEVEL"] as LogLevel || LogLevel.DEBUG;
 
@@ -65,6 +75,7 @@ const ELASTICSEARCH_PASSWORD =  process.env["ELASTICSEARCH_PASSWORD"] ||  "elast
 const KAFKA_URL = process.env["KAFKA_URL"] || "localhost:9092";
 
 const AUDIT_KEY_FILE_PATH = process.env["AUDIT_KEY_FILE_PATH"] || "/app/data/audit_private_key.pem";
+const SVC_DEFAULT_HTTP_PORT = process.env["SVC_DEFAULT_HTTP_PORT"] || 3050;
 
 const kafkaProducerOptions = {
     kafkaBrokerList: KAFKA_URL
@@ -72,12 +83,17 @@ const kafkaProducerOptions = {
 
 let globalLogger: ILogger;
 
+const SERVICE_START_TIMEOUT_MS = 60_000;
+
 export class Service {
     static logger: ILogger;
+    static app: Express;
+    static expressServer: Server;
     static agg: AuditingAggregate;
-    static aggRepo: IAuditRepo;
+    static auditRepo: IAuditRepo;
     static aggCrypto: IAuditAggregateCryptoProvider;
     static kafkaConsumer: IRawMessageConsumer;
+    static startupTimer: NodeJS.Timeout;
 
     static async start(
             logger?: ILogger,
@@ -85,6 +101,12 @@ export class Service {
             aggCrypto?: IAuditAggregateCryptoProvider,
             kafkaConsumer?: IRawMessageConsumer,
     ): Promise<void> {
+        console.log(`Service starting with PID: ${process.pid}`);
+
+        this.startupTimer = setTimeout(()=>{
+            throw new Error("Service start timed-out");
+        }, SERVICE_START_TIMEOUT_MS);
+
         if (!logger) {
             logger = new KafkaLogger(
                     BC_NAME,
@@ -114,7 +136,7 @@ export class Service {
             aggRepo = new ElasticsearchAuditStorage(elasticOpts, ELASTICSEARCH_AUDITS_INDEX, this.logger);
             await aggRepo.init();
         }
-        this.aggRepo = aggRepo;
+        this.auditRepo = aggRepo;
 
         if (!aggCrypto) {
             if (!existsSync(AUDIT_KEY_FILE_PATH)) {
@@ -126,7 +148,7 @@ export class Service {
         }
         this.aggCrypto = aggCrypto;
 
-        this.agg = new AuditingAggregate(BC_NAME, APP_NAME, APP_VERSION, this.aggRepo, this.aggCrypto, this.logger);
+        this.agg = new AuditingAggregate(BC_NAME, APP_NAME, APP_VERSION, this.auditRepo, this.aggCrypto, this.logger);
 
         logger.info("AuditingAggregate initialised");
 
@@ -146,7 +168,43 @@ export class Service {
         await this.kafkaConsumer.connect();
         await this.kafkaConsumer.startAndWaitForRebalance();
 
-        this.logger.info(`Auditing Service service v: ${APP_VERSION} initialised`);
+        await this.setupExpress();
+
+        // remove startup timeout
+        clearTimeout(this.startupTimer);
+
+    }
+
+    static setupExpress(): Promise<void> {
+        return new Promise<void>(resolve => {
+            this.app = express();
+            this.app.use(express.json()); // for parsing application/json
+            this.app.use(express.urlencoded({extended: true})); // for parsing application/x-www-form-urlencoded
+
+            // Add health and metrics http routes
+            this.app.get("/health", (req: express.Request, res: express.Response) => {return res.send({ status: "OK" }); });
+            // this.app.get("/metrics", async (req: express.Request, res: express.Response) => {
+            //     const strMetrics = await (this.metrics as PrometheusMetrics).getMetricsForPrometheusScrapper();
+            //     return res.send(strMetrics);
+            // });
+
+            // Add admin and client http routes
+            const mainRoutes = new AuditMainRoutes(this.logger, this.auditRepo);
+            this.app.use(mainRoutes.mainRouter);
+
+            this.app.use((req, res) => {
+                // catch all
+                res.send(404);
+            });
+
+            this.expressServer = this.app.listen(SVC_DEFAULT_HTTP_PORT, () => {
+                this.logger.info(`Auditing Service service v: ${APP_VERSION} initialised`);
+                globalLogger.info(`🚀Server ready at: http://localhost:${SVC_DEFAULT_HTTP_PORT}`);
+                globalLogger.info(`Auditing Service started, version: ${APP_VERSION}`);
+                resolve();
+            });
+
+        });
     }
 
     static async stop(force = false): Promise<void> {
@@ -155,7 +213,7 @@ export class Service {
             await this.kafkaConsumer.disconnect(force);
             await this.kafkaConsumer.destroy(force);
         }
-        if (this.aggRepo) await this.aggRepo.destroy();
+        if (this.auditRepo) await this.auditRepo.destroy();
         if (this.aggCrypto) await this.aggCrypto.destroy();
     }
 }

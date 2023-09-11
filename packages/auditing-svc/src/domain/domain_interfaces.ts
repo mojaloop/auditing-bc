@@ -38,6 +38,19 @@ export interface IAuditRepo{
     init():Promise<void>;
     destroy():Promise<void>;
     store(entry:SignedCentralAuditEntry): Promise<void>;
+
+    searchEntries(
+        // text:string|null,
+        userId:string|null,
+        sourceBcName:string|null,
+        sourceAppName:string|null,
+        actionType:string|null,
+        actionSuccessful:boolean|null,
+        startDate:number|null,
+        endDate:number|null
+    ): Promise<SignedCentralAuditEntry[]>;
+
+    getSearchKeywords():Promise<{fieldName:string, distinctTerms:string[]}[]>
 }
 
 
