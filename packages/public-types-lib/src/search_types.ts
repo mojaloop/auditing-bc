@@ -29,43 +29,30 @@
  ******/
 
 "use strict";
-
-import { SourceAuditEntry } from "@mojaloop/auditing-bc-public-types-lib";
-
-import {AuditSearchResults, SignedCentralAuditEntry} from "./server_types";
-
-export interface IAuditRepo{
-    init():Promise<void>;
-    destroy():Promise<void>;
-    store(entry:SignedCentralAuditEntry): Promise<void>;
-
-    searchEntries(
-        // text:string|null,
-        userId:string|null,
-        sourceBcName:string|null,
-        sourceAppName:string|null,
-        actionType:string|null,
-        actionSuccessful:boolean|null,
-        startDate:number|null,
-        endDate:number|null,
-        pageIndex?:number,
-        pageSize?: number
-    ): Promise<AuditSearchResults>;
-
-    getSearchKeywords():Promise<{fieldName:string, distinctTerms:string[]}[]>
-}
+//
+// // this must match the CentralAuditEntry and SignedSourceAuditEntry
+// export declare type AuditSearchResultsItem = {
+//     // from CentralAuditEntry
+//     invalidSourceSignature: boolean;            // invalid source sig detected by central auditing service
+//     persistenceTimestamp: number;               // unix timestamp of the persistence
+//     auditingSvcAppName: string;
+//     auditingSvcAppVersion: string;
+//
+//     auditingSvcKeyId: string;
+//
+//     // from SignedCentralAuditEntry
+//     auditingSvcSignature: string;
+// }
+//
+// export declare type AuditSearchResults = {
+//     page_size: number;
+//     total_pages: number;
+//     current_page: number;
+//     items: AuditSearchResultsItem[];
+// }
 
 
-export interface IAuditAggregateCryptoProvider{
-    init():Promise<void>;
-    destroy():Promise<void>;
 
-    // fetchAppPublicKey(bcName:string, appName:string, appVersion:string):Promise<KeyObject>;
-    // verifySourceSignature(entry:SignedCentralAuditEntry, pubKey:KeyObject): Promise<void>;
 
-    // this should be able to fetch the correct pub key and verify the sig
-    verifySourceSignature(jsonStr:string, sourceKeyId:string, signature:string): Promise<boolean>;
 
-    getSha1Signature(strData:string):Promise<string>;
-    getPubKeyFingerprint():Promise<string>;
-}
+

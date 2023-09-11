@@ -34,8 +34,8 @@ import {ILogger} from "@mojaloop/logging-bc-public-types-lib";
 import {Client, errors} from "@elastic/elasticsearch";
 import {ClientOptions} from "@elastic/elasticsearch/lib/client";
 import {IAuditRepo} from "../domain/domain_interfaces";
-import {SignedCentralAuditEntry} from "../domain/server_types";
-import {QueryDslQueryContainer} from "@elastic/elasticsearch/lib/api/types";
+import {AuditSearchResults, SignedCentralAuditEntry} from "../domain/server_types";
+import {QueryDslQueryContainer, SearchTotalHits} from "@elastic/elasticsearch/lib/api/types";
 
 const MAX_ENTRIES_PER_PAGE = 100;
 
@@ -66,17 +66,6 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
     }
 
 
-    async store(entry: SignedCentralAuditEntry): Promise<void> {
-        try {
-            await this._client.index({
-                index: this._index,
-                document: entry
-            });
-        } catch (err) {
-            this._logger.error("ElasticsearchAuditStorage error", err);
-        }
-    }
-
     async searchEntries(
         // text:string|null,
         userId:string|null,
@@ -85,9 +74,22 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
         actionType:string|null,
         actionSuccessful:boolean|null,
         startDate:number|null,
-        endDate:number|null
-    ): Promise<SignedCentralAuditEntry[]> {
-        const retList: SignedCentralAuditEntry[] = [];
+        endDate:number|null,
+        pageIndex = 0,
+        pageSize: number = MAX_ENTRIES_PER_PAGE
+    ): Promise<AuditSearchResults> {
+        // make sure we don't go over or below the limits
+        pageSize = Math.min(pageSize, MAX_ENTRIES_PER_PAGE);
+        pageIndex = Math.max(pageIndex, 0);
+
+        const searchResults: AuditSearchResults = {
+            pageSize: pageSize,
+            pageIndex: pageIndex,
+            totalPages: 0,
+            items: []
+        };
+
+
 
         let query:QueryDslQueryContainer = { match_all: {} };
         const conditions = [];
@@ -100,35 +102,65 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
         if(actionType) conditions.push({match: {"actionType": actionType}});
         if(actionSuccessful != null) conditions.push({match: {"actionSuccessful": actionSuccessful}});
 
+        if(startDate || endDate){
+            const rangeCondition:any = {range: {"actionTimestamp": { }}};
+            if(startDate){
+                rangeCondition.range.actionTimestamp["gte"] = new Date(startDate).toISOString();
+            }
+            if(endDate){
+                rangeCondition.range.actionTimestamp["lte"] = new Date(endDate).toISOString();
+            }
+
+            conditions.push(rangeCondition);
+        }
 
         if(conditions.length > 0) {
             query = {
                 bool: {
-                    must: conditions
+                    must: conditions,
+                    //filter:[]
                 }
             };
         }
 
         try {
+            const from = Math.floor(pageIndex * pageSize);
             const result = await this._client.search({
                 index: this._index,
-                // keep the search results "scrollable" for 30 seconds
+                sort: [{"actionTimestamp": {"order":"desc"}}],
+                size: pageSize,
+                from: from,
+                query: query,
+                // keep the search results "scrollable" for 30 seconds, for other method of pagination
                 // scroll: "30s",
-                // for the sake of this example, we will get only one result per search
-                size: MAX_ENTRIES_PER_PAGE,
-                query: query
             });
 
             if (result && result.hits && result.hits.hits) {
                 result.hits.hits.forEach(value => {
-                    retList.push(value._source as SignedCentralAuditEntry);
+                    searchResults.items.push(value._source as SignedCentralAuditEntry);
                 });
+
+                const totalEntries = (result.hits.total as SearchTotalHits).value;
+
+                searchResults.totalPages = Math.ceil(totalEntries / pageSize);
+                searchResults.pageSize = Math.max(pageSize, result.hits.hits.length);
             }
         } catch (err) {
             this._logger.error(err);
         }
 
-        return Promise.resolve(retList);
+        return Promise.resolve(searchResults);
+    }
+
+    async store(entry: SignedCentralAuditEntry): Promise<void> {
+        try {
+            await this._client.index({
+                index: this._index,
+                document: entry
+            });
+        } catch (err) {
+            this._logger.error("ElasticsearchAuditStorage error", err);
+        }
     }
 
     async getSearchKeywords():Promise<{fieldName:string, distinctTerms:string[]}[]>{

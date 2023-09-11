@@ -35,7 +35,7 @@ import { ILogger } from "@mojaloop/logging-bc-public-types-lib";
 import { TokenHelper } from "@mojaloop/security-bc-client-lib";
 import express from "express";
 import {IAuditRepo} from "../../domain/domain_interfaces";
-import {SignedCentralAuditEntry} from "../../domain/server_types";
+import {AuditSearchResults, SignedCentralAuditEntry} from "../../domain/server_types";
 
 declare module "express-serve-static-core" {
     export interface Request {
@@ -164,8 +164,15 @@ export class AuditMainRoutes {
         const endDateStr = req.query.endDate as string || req.query.enddate as string;
         const endDate = endDateStr ? parseInt(endDateStr) : null;
 
+        // optional pagination
+        const pageIndexStr = req.query.pageIndex as string || req.query.pageindex as string;
+        const pageIndex = pageIndexStr ? parseInt(pageIndexStr) : undefined;
+
+        const pageSizeStr = req.query.pageSize as string || req.query.pagesize as string;
+        const pageSize = pageSizeStr ? parseInt(pageSizeStr) : undefined;
+
         try{
-            const ret: SignedCentralAuditEntry[] = await this._repo.searchEntries(
+            const ret:AuditSearchResults = await this._repo.searchEntries(
                 // text,
                 userId,
                 sourceBcName,
@@ -173,7 +180,9 @@ export class AuditMainRoutes {
                 actionType,
                 actionSuccessful,
                 startDate,
-                endDate
+                endDate,
+                pageIndex,
+                pageSize
             );
             res.send(ret);
         }   catch (err: any) {

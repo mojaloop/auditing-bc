@@ -56,6 +56,12 @@ export declare type SignedCentralAuditEntry = CentralAuditEntry & {
 }
 
 
+export declare type AuditSearchResults = {
+    pageSize: number;
+    totalPages: number;
+    pageIndex: number;
+    items: SignedCentralAuditEntry[];
+}
 
 
 
