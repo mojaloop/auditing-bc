@@ -41,7 +41,6 @@ import express, {Express} from "express";
 import {Server} from "net";
 import {ILogger, LogLevel} from "@mojaloop/logging-bc-public-types-lib";
 import {
-    IRawMessage,
     MLKafkaRawConsumer,
     MLKafkaRawConsumerOutputType
 } from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
