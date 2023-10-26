@@ -32,8 +32,8 @@
 "use strict";
 
 
-import {SignedSourceAuditEntry} from '@mojaloop/auditing-bc-public-types-lib';
-import {IRawMessage, MLKafkaRawProducer, MLKafkaRawProducerOptions} from '@mojaloop/platform-shared-lib-nodejs-kafka-client-lib';
+import {SignedSourceAuditEntry} from "@mojaloop/auditing-bc-public-types-lib";
+import {IRawMessage, MLKafkaRawProducer, MLKafkaRawProducerOptions} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
 
 import {IAuditClientDispatcher} from "./interfaces";
 import {ILogger} from "@mojaloop/logging-bc-public-types-lib";
