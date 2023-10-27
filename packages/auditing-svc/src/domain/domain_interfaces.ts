@@ -37,7 +37,7 @@ import {AuditSearchResults, SignedCentralAuditEntry} from "./server_types";
 export interface IAuditRepo{
     init():Promise<void>;
     destroy():Promise<void>;
-    store(entry:SignedCentralAuditEntry): Promise<void>;
+    store(entries:SignedCentralAuditEntry[]): Promise<void>;
 
     searchEntries(
         // text:string|null,

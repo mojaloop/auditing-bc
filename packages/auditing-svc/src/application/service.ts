@@ -73,6 +73,9 @@ const ELASTICSEARCH_PASSWORD =  process.env["ELASTICSEARCH_PASSWORD"] ||  "elast
 
 const KAFKA_URL = process.env["KAFKA_URL"] || "localhost:9092";
 
+const CONSUMER_BATCH_SIZE = (process.env["CONSUMER_BATCH_SIZE"] && parseInt(process.env["CONSUMER_BATCH_SIZE"])) || 100;
+const CONSUMER_BATCH_TIMEOUT_MS = (process.env["CONSUMER_BATCH_TIMEOUT_MS"] && parseInt(process.env["CONSUMER_BATCH_TIMEOUT_MS"])) || 1000;
+
 const AUDIT_KEY_FILE_PATH = process.env["AUDIT_KEY_FILE_PATH"] || "/app/data/audit_private_key.pem";
 const SVC_DEFAULT_HTTP_PORT = process.env["SVC_DEFAULT_HTTP_PORT"] || 3050;
 
@@ -148,6 +151,7 @@ export class Service {
         this.aggCrypto = aggCrypto;
 
         this.agg = new AuditingAggregate(BC_NAME, APP_NAME, APP_VERSION, this.auditRepo, this.aggCrypto, this.logger);
+        await this.agg.init();
 
         logger.info("AuditingAggregate initialised");
 
@@ -155,14 +159,16 @@ export class Service {
             const kafkaConsumerOptions = {
                 kafkaBrokerList: KAFKA_URL,
                 kafkaGroupId: `${BC_NAME}_${APP_NAME}`,
-                outputType: MLKafkaRawConsumerOutputType.Json
+                outputType: MLKafkaRawConsumerOutputType.Json,
+                batchSize: CONSUMER_BATCH_SIZE,
+                batchTimeoutMs: CONSUMER_BATCH_TIMEOUT_MS
             };
             kafkaConsumer = new MLKafkaRawConsumer(kafkaConsumerOptions, logger.createChild("kafkaConsumer"));
         }
         this.kafkaConsumer = kafkaConsumer;
 
         this.kafkaConsumer.setTopics([KAFKA_AUDITS_TOPIC]);
-        this.kafkaConsumer.setCallbackFn(this.agg.processMessage.bind(this.agg));
+        this.kafkaConsumer.setBatchCallbackFn(this.agg.processMessages.bind(this.agg));
 
         await this.kafkaConsumer.connect();
         await this.kafkaConsumer.startAndWaitForRebalance();

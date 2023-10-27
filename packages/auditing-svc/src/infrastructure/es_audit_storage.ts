@@ -152,12 +152,20 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
         return Promise.resolve(searchResults);
     }
 
-    async store(entry: SignedCentralAuditEntry): Promise<void> {
+    async store(entries: SignedCentralAuditEntry[]): Promise<void> {
         try {
-            await this._client.index({
-                index: this._index,
-                document: entry
+            const onDocument = (doc:any):any=>{
+                return {
+                    index: {_index: this._index},
+                    document: doc
+                };
+            };
+
+            await this._client.helpers.bulk({
+                datasource: entries,
+                onDocument: onDocument.bind(this)
             });
+
         } catch (err) {
             this._logger.error("ElasticsearchAuditStorage error", err);
         }

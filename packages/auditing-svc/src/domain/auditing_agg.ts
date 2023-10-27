@@ -45,6 +45,7 @@ export class AuditingAggregate{
     private _logger: ILogger;
     private _repo: IAuditRepo;
     private _cryptProvider: IAuditAggregateCryptoProvider;
+    private _ownPubKeyfingerprint: string = INVALID_SIGNATURE_STR;
 
     constructor(bcName: string, appName: string, appVersion: string, repo: IAuditRepo, cryptProvider: IAuditAggregateCryptoProvider, logger: ILogger) {
         this._bcName = bcName;
@@ -55,33 +56,50 @@ export class AuditingAggregate{
         this._logger = logger.createChild((this as any).constructor.name);
     }
 
+    async init():Promise<void>{
+        // let it break if it throws; svc shouldn't start without it
+        this._ownPubKeyfingerprint = await this._cryptProvider.getPubKeyFingerprint();
+    }
+
+    async processMessages(messages: IRawMessage[]):Promise<void> {
+        const entries: SignedCentralAuditEntry[] = [];
+
+        for(const msg of messages){
+            const entry = await this._processSignedSourceAuditEntry(msg.value as SignedSourceAuditEntry );
+            entries.push(entry);
+        }
+
+        try {
+            await this._repo.store(entries);
+        }catch(err){
+            this._logger.error(err);
+        }
+    }
+
     private _getSourceEntryFromSignedSourceEntry(signedSourceEntry:SignedSourceAuditEntry):SourceAuditEntry{
         // remove sourceSignature prop from signed object
         const {sourceSignature, ...sourceEntry} = signedSourceEntry;
         return sourceEntry;
     }
 
-    async processMessage(message: IRawMessage):Promise<void> {
-        const value = message.value;
-        await this.processSignedSourceAuditEntry(value as SignedSourceAuditEntry);
+    private async _isSignedSourceAuditEntryVerified(entry: SignedSourceAuditEntry):Promise<boolean>{
+        try {
+            const sourceEntry = this._getSourceEntryFromSignedSourceEntry(entry);
+            const jsonString = JSON.stringify(sourceEntry);
+            const sourceSigIsVerified = await this._cryptProvider.verifySourceSignature(
+                jsonString,
+                sourceEntry.sourceKeyId,
+                entry.sourceSignature
+            );
+            return sourceSigIsVerified;
+        }catch(err){
+            this._logger.error(err); // log but continue
+            return false;
+        }
     }
 
-    async processSignedSourceAuditEntry(signedSourceEntry:SignedSourceAuditEntry):Promise<void>{
-        let sourceSigVerified = false;
-        try {
-            const sourceEntry = this._getSourceEntryFromSignedSourceEntry(signedSourceEntry);
-            const jsonString = JSON.stringify(sourceEntry);
-            sourceSigVerified = await this._cryptProvider.verifySourceSignature(jsonString, sourceEntry.sourceKeyId, signedSourceEntry.sourceSignature);
-        }catch(err){
-            this._logger.error(err); // log but continue
-        }
-
-        let ownPubKeyfingerprint = INVALID_SIGNATURE_STR;
-        try {
-            ownPubKeyfingerprint = await this._cryptProvider.getPubKeyFingerprint();
-        }catch(err){
-            this._logger.error(err); // log but continue
-        }
+    private async _processSignedSourceAuditEntry(signedSourceEntry:SignedSourceAuditEntry):Promise<SignedCentralAuditEntry>{
+        const sourceSigVerified = await this._isSignedSourceAuditEntryVerified(signedSourceEntry);
 
         const centralAuditEntry:CentralAuditEntry = {
             ...signedSourceEntry,
@@ -89,27 +107,21 @@ export class AuditingAggregate{
             persistenceTimestamp: Date.now(),
             auditingSvcAppName: this._appName,
             auditingSvcAppVersion: this._appVersion,
-
-            auditingSvcKeyId: ownPubKeyfingerprint
+            auditingSvcKeyId: this._ownPubKeyfingerprint
         };
 
-        let signature = INVALID_SIGNATURE_STR;
+        let svcSignature = INVALID_SIGNATURE_STR;
         try{
-            signature = await this._cryptProvider.getSha1Signature(JSON.stringify(centralAuditEntry));
+            svcSignature = await this._cryptProvider.getSha1Signature(JSON.stringify(centralAuditEntry));
         }catch(err){
             this._logger.error(err); // log but continue
         }
 
         const finalEntry : SignedCentralAuditEntry ={
             ...centralAuditEntry,
-            auditingSvcSignature: signature
+            auditingSvcSignature: svcSignature
         };
 
-        try {
-            await this._repo.store(finalEntry);
-        }catch(err){
-            this._logger.error(err);
-        }
-
+        return finalEntry;
     }
 }
