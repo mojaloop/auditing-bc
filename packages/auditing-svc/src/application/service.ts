@@ -85,7 +85,7 @@ const kafkaProducerOptions = {
 
 let globalLogger: ILogger;
 
-const SERVICE_START_TIMEOUT_MS = 60_000;
+const SERVICE_START_TIMEOUT_MS= (process.env["SERVICE_START_TIMEOUT_MS"] && parseInt(process.env["SERVICE_START_TIMEOUT_MS"])) || 60_000;
 
 export class Service {
     static logger: ILogger;
