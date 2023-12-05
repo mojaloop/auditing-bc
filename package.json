@@ -1,56 +1,60 @@
 {
-  "name": "@mojaloop/auditing-bc",
-  "version": "0.0.1",
-  "description": "mojaloop auditing bounded context.",
-  "license": "Apache-2.0",
-  "homepage": "https://github.com/mojaloop/auditing-bc",
-  "private": true,
-  "bugs": {
-    "url": "https://github.com/mojaloop/auditing-bc/issues#readme"
-  },
-  "contributors": [
-    "Jason Bruwer <jason.bruwer@coil.com>",
-    "Pedro Sousa Barreto <pedrosousabarreto@gmail.com>"
-  ],
-  "scripts": {
-    "prepare": "husky install",
-    "pre_commit_check": "npm run build && npm run lint && npm run test:unit",
-    "start:auditing-svc": "npm -w @mojaloop/auditing-bc-auditing-svc run start",
-    "build": "npm -ws run build",
-    "docker:build": "npm run build && docker build . -t \"mojaloop/auditing-bc-auditing-svc\"",
-    "watch": "npm -ws run watch",
-    "clean": "npm run clean:dist; npm run clean:npm",
-    "clean:npm": "rm -Rf node_modules; npm -ws run clean:npm",
-    "clean:dist": "rm -Rf dist; npm -ws run clean:dist",
-    "pretest": "npm run build",
-    "standard": "npm -ws --no-progress lint'",
-    "lint": "npm -ws run lint",
-    "lint:fix": "npm -ws run lint:fix",
-    "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "npm -ws --if-present run test:unit",
-    "test:integration": "jest",
-    "posttest": "npm run coverage:merge && npm run coverage:gen-report",
-    "coverage:merge": "nyc merge ./coverage/ ./coverage/coverage.json",
-    "coverage:gen-report": "nyc report --reporter=lcov --reporter=text --temp-dir=./coverage",
-    "audit:check": "npm -ws  run audit:check",
-    "dep:check": "ncu -e 2; npm -ws run dep:check",
-    "dep:update": "ncu -e 2 -u; npm -ws run dep:update"
-  },
-  "devDependencies": {
-    "@types/jest": "^29.5.8",
-    "@types/node": "^20.9.1",
-    "@typescript-eslint/eslint-plugin": "^6.11.0",
-    "@typescript-eslint/parser": "^6.11.0",
-    "eslint": "^8.53.0",
-    "husky": "^8.0.3",
-    "jest": "^29.7.0",
-    "npm-check-updates": "~16.14.6",
-    "nyc": "^15.1.0",
-    "ts-jest": "^29.1.1",
-    "typescript": "^5.2.2"
-  },
-  "workspaces": [
-    "packages/public-types-lib",
-    "packages/*"
-  ]
+    "name": "@mojaloop/auditing-bc",
+    "version": "0.5.0",
+    "description": "mojaloop auditing bounded context.",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/mojaloop/auditing-bc",
+    "private": true,
+    "bugs": {
+        "url": "https://github.com/mojaloop/auditing-bc/issues#readme"
+    },
+    "contributors": [
+        "Jason Bruwer <jason.bruwer@coil.com>",
+        "Pedro Sousa Barreto <pedrosousabarreto@gmail.com>"
+    ],
+    "scripts": {
+        "prepare": "husky install",
+        "pre_commit_check": "npm run build && npm run lint && npm run test:unit",
+        "start:auditing-svc": "npm -w @mojaloop/auditing-bc-auditing-svc run start",
+        "build": "npm -ws run build",
+        "docker:build": "npm run build && docker build . -t \"mojaloop/auditing-bc-auditing-svc\"",
+        "watch": "npm -ws run watch",
+        "clean": "npm run clean:dist; npm run clean:npm",
+        "clean:npm": "rm -Rf node_modules; npm -ws run clean:npm",
+        "clean:dist": "rm -Rf dist; npm -ws run clean:dist",
+        "pretest": "npm run build",
+        "standard": "npm -ws --no-progress lint'",
+        "lint": "npm -ws run lint",
+        "lint:fix": "npm -ws run lint:fix",
+        "test": "npm run test:unit && npm run test:integration",
+        "test:unit": "npm -ws --if-present run test:unit",
+        "test:integration": "jest",
+        "posttest": "npm run coverage:merge && npm run coverage:gen-report",
+        "coverage:merge": "nyc merge ./coverage/ ./coverage/coverage.json",
+        "coverage:gen-report": "nyc report --reporter=lcov --reporter=text --temp-dir=./coverage",
+        "audit:check": "npm -ws  run audit:check",
+        "dep:check": "ncu -e 2; npm -ws run dep:check",
+        "dep:update": "ncu -e 2 -u; npm -ws run dep:update"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.10",
+        "@types/node": "^20.10.3",
+        "@typescript-eslint/eslint-plugin": "^6.13.2",
+        "@typescript-eslint/parser": "^6.13.2",
+        "eslint": "^8.55.0",
+        "husky": "^8.0.3",
+        "jest": "^29.7.0",
+        "npm-check-updates": "~16.14.11",
+        "nyc": "^15.1.0",
+        "ts-jest": "^29.1.1",
+        "typescript": "^5.3.2",
+        "tslib": "^2.6.2"
+    },
+    "workspaces": [
+        "packages/public-types-lib",
+        "packages/*"
+    ],
+    "engines": {
+        "node": ">=20.10.0"
+    }
 }
