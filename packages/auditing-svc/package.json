@@ -1,6 +1,6 @@
 {
     "name": "@mojaloop/auditing-bc-auditing-svc",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "Mojaloop auditing server component",
     "license": "Apache-2.0",
     "homepage": "https://github.com/mojaloop/auditing-bc/tree/main/packages/auditing-svc",
