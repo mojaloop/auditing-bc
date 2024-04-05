@@ -32,6 +32,8 @@
 import {LogLevel} from "@mojaloop/logging-bc-public-types-lib"
 import {DefaultLogger} from "@mojaloop/logging-bc-client-lib";
 
+import request from "supertest";
+
 import {
   AuditClient,
   IAuditClientCryptoProvider,
@@ -39,7 +41,7 @@ import {
   LocalAuditClientCryptoProvider
 } from "@mojaloop/auditing-bc-client-lib";
 import {AuditSecurityContext} from "@mojaloop/auditing-bc-public-types-lib";
-import {existsSync} from "fs";
+import {existsSync, unlinkSync} from "fs";
 import { Client } from "@elastic/elasticsearch";
 
 // direct imports from the svc module
@@ -49,9 +51,7 @@ import {
   AuditAggregateCryptoProvider
 } from "@mojaloop/auditing-bc-auditing-svc/dist/infrastructure/audit_agg_crypto_provider";
 import {MLKafkaRawConsumer, MLKafkaRawConsumerOutputType} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
-import {IRawMessageConsumer} from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib/dist/raw/raw_types";
-
-
+import path from "path";
 
 const BC_NAME = "auditing-bc";
 const APP_NAME = "auditing-svc-integration-tests";
@@ -68,7 +68,7 @@ const KAFKA_URL = process.env["KAFKA_URL"] || "localhost:9092";
 
 const logger = new DefaultLogger(BC_NAME, APP_NAME, APP_VERSION, LOGLEVEL);
 
-const TMP_KEY_PATH = "../tmp_key_file";
+const TMP_KEY_PATH = path.join(__dirname, "../tmp_private_key.pem");
 
 // client stuff
 
@@ -86,6 +86,11 @@ const kafkaProducerOptions = {
 }
 
 describe("Auditing BC integration tests", () => {
+  let auditClient: AuditClient;
+  let cryptoProvider: IAuditClientCryptoProvider;
+  let auditDispatcher: IAuditClientDispatcher;
+  let aggCrypto: AuditAggregateCryptoProvider;
+
   jest.setTimeout(15000);
 
   beforeAll(async () => {
@@ -95,7 +100,7 @@ describe("Auditing BC integration tests", () => {
     }
 
     // start the service with the same key
-    const aggCrypto = new AuditAggregateCryptoProvider(TMP_KEY_PATH, logger);
+    aggCrypto = new AuditAggregateCryptoProvider(TMP_KEY_PATH, logger);
     await aggCrypto.init();
 
     const kafkaConsumerOptions = {
@@ -111,25 +116,27 @@ describe("Auditing BC integration tests", () => {
         aggCrypto,
         kafkaConsumer
     );
+    Service.auditRepo
+
+    cryptoProvider = new LocalAuditClientCryptoProvider(TMP_KEY_PATH);
+    auditDispatcher = new KafkaAuditClientDispatcher(kafkaProducerOptions, KAFKA_AUDITS_TOPIC, logger.createChild("auditDispatcher"));
+    auditClient = new AuditClient(BC_NAME, APP_NAME, APP_VERSION, cryptoProvider, auditDispatcher);
+    await auditClient.init();
+
     await new Promise(f => setTimeout(f, 1000));
   });
 
   afterAll(async () => {
     // Cleanup
+    if(existsSync(TMP_KEY_PATH)) {
+        // delete the key file
+        unlinkSync(TMP_KEY_PATH);
+    }
     await Service.stop();
   });
 
 
   test("AuditClient - test send audit entry", async () => {
-    let auditClient: AuditClient;
-    let cryptoProvider: IAuditClientCryptoProvider;
-    let auditDispatcher: IAuditClientDispatcher;
-
-    cryptoProvider = new LocalAuditClientCryptoProvider(TMP_KEY_PATH);
-    auditDispatcher = new KafkaAuditClientDispatcher(kafkaProducerOptions, KAFKA_AUDITS_TOPIC, logger.createChild("auditDispatcher"));
-    auditClient = new AuditClient(BC_NAME, APP_NAME, APP_VERSION, cryptoProvider, auditDispatcher);
-
-    await auditClient.init();
     logger.info("Sending audit entry with actionType: "+ testAction);
     await auditClient.audit(testAction, true, secCtx);
     logger.info("Audit entry sent");
@@ -137,7 +144,7 @@ describe("Auditing BC integration tests", () => {
     await auditClient.destroy();
   });
 
-  test("test ES storage of audit entry", async () => {
+  describe("ES Storage", () => {
     const elasticOpts = { node: ELASTICSEARCH_URL,
       auth: {
         username: ELASTICSEARCH_USERNAME,
@@ -148,25 +155,57 @@ describe("Auditing BC integration tests", () => {
         rejectUnauthorized: false,
       }
     };
-
-
-    // wait 2 secs to the entry to be indexed
-    await new Promise(f => setTimeout(f, 5000));
-
     const esClient = new Client(elasticOpts);
-    const result = await esClient.search({
-      index: ELASTICSEARCH_AUDITS_INDEX,
-      query: {
-        match: {
-          actionType: testAction
+
+    test("test ES storage of audit entry", async () => {
+      // wait 2 secs to the entry to be indexed
+      await new Promise(f => setTimeout(f, 5000));
+
+      const result = await esClient.search({
+        index: ELASTICSEARCH_AUDITS_INDEX,
+        query: {
+          match: {
+            actionType: testAction
+          }
         }
-      }
+      });
+
+      expect(result.hits.hits.length).toBeGreaterThan(0);
+
+      await esClient.close();
     });
 
-    expect(result.hits.hits.length).toBeGreaterThan(0);
-
-    await esClient.close();
   });
 
+  describe("GET /health", () => {
+    it('should return health status', async () => {
+      const response = await request(Service.expressServer).get('/health');
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveProperty('status', 'OK');
+    })
+  })
+
+  describe("GET /non-exists-route", () => {
+    it('should return 404', async () => {
+      const response = await request(Service.expressServer).get('/non-exists-route');
+      expect(response.statusCode).toBe(404);
+    })
+  });
+
+  describe("GET /entries/", () => {
+    it('should return audit entries', async () => {
+      const response = await request(Service.expressServer).get('/entries/');
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual(expect.anything());
+    });
+  });
+
+  describe('GET /searchKeywords/', () => {
+    it('should return search keywords', async () => {
+      const response = await request(Service.expressServer).get('/searchKeywords/');
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toEqual(expect.anything());
+    });
+  });
 
 })

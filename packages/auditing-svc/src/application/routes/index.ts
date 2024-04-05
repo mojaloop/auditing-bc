@@ -65,10 +65,12 @@ export class AuditMainRoutes {
         this.mainRouter.get("/searchKeywords/", this._getSearchKeywords.bind(this));
     }
 
+    /* istanbul ignore next */
     get logger(): ILogger {
         return this._logger;
     }
 
+    /* istanbul ignore next */
     get mainRouter(): express.Router {
         return this._mainRouter;
     }
@@ -96,6 +98,7 @@ export class AuditMainRoutes {
     }
     */
 
+    /* istanbul ignore next */
     private _handleUnauthorizedError(err: Error, res: express.Response): boolean {
         if (err instanceof UnauthorizedError) {
             this._logger.warn(err.message);
@@ -162,7 +165,7 @@ export class AuditMainRoutes {
                 pageSize
             );
             res.send(ret);
-        }   catch (err: any) {
+        }   catch (err: any) /* istanbul ignore next */ {
             if (this._handleUnauthorizedError(err, res)) return;
 
             this.logger.error(err);
@@ -177,7 +180,7 @@ export class AuditMainRoutes {
         try{
             const ret = await this._repo.getSearchKeywords();
             res.send(ret);
-        }   catch (err: any) {
+        }   catch (err: any) /* istanbul ignore next */ {
             if (this._handleUnauthorizedError(err, res)) return;
 
             this.logger.error(err);

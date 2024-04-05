@@ -41,7 +41,8 @@ import {
 import {ConsoleLogger} from "@mojaloop/logging-bc-public-types-lib";
 import {AuditSecurityContext} from "@mojaloop/auditing-bc-public-types-lib";
 import {MockAuditClientDispatcher} from "./mock_audit_dispatcher";
-import {existsSync} from "fs";
+import {existsSync, unlinkSync} from "fs";
+import path from "path";
 
 const BC_NAME = "logging-bc";
 const APP_NAME = "client-lib";
@@ -58,7 +59,7 @@ const secCtx: AuditSecurityContext = {
     role: "role"
 };
 
-const TMP_KEY_FILE_PATH = "./tmp_key_file";
+const TMP_KEY_FILE_PATH = path.join(__dirname, "tmp_key_file_client_lib.pem");
 
 describe("test audit client with mock dispatcher", () => {
 
@@ -77,6 +78,10 @@ describe("test audit client with mock dispatcher", () => {
     });
 
     afterAll(async ()=>{
+        if(existsSync(TMP_KEY_FILE_PATH)) {
+            // delete the key file
+            unlinkSync(TMP_KEY_FILE_PATH);
+        }
         await cryptoProvider.destroy();
         await auditClient.destroy();
     });

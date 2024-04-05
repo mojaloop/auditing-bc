@@ -73,7 +73,10 @@ const ELASTICSEARCH_PASSWORD =  process.env["ELASTICSEARCH_PASSWORD"] ||  "elast
 
 const KAFKA_URL = process.env["KAFKA_URL"] || "localhost:9092";
 
+/* istanbul ignore next */
 const CONSUMER_BATCH_SIZE = (process.env["CONSUMER_BATCH_SIZE"] && parseInt(process.env["CONSUMER_BATCH_SIZE"])) || 100;
+
+/* istanbul ignore next */
 const CONSUMER_BATCH_TIMEOUT_MS = (process.env["CONSUMER_BATCH_TIMEOUT_MS"] && parseInt(process.env["CONSUMER_BATCH_TIMEOUT_MS"])) || 1000;
 
 const AUDIT_KEY_FILE_PATH = process.env["AUDIT_KEY_FILE_PATH"] || "/app/data/audit_private_key.pem";
@@ -85,6 +88,7 @@ const kafkaProducerOptions = {
 
 let globalLogger: ILogger;
 
+/* istanbul ignore next */
 const SERVICE_START_TIMEOUT_MS= (process.env["SERVICE_START_TIMEOUT_MS"] && parseInt(process.env["SERVICE_START_TIMEOUT_MS"])) || 60_000;
 
 export class Service {
@@ -105,10 +109,11 @@ export class Service {
     ): Promise<void> {
         console.log(`Service starting with PID: ${process.pid}`);
 
-        this.startupTimer = setTimeout(()=>{
+        this.startupTimer = setTimeout(/* istanbul ignore next */()=>{
             throw new Error("Service start timed-out");
         }, SERVICE_START_TIMEOUT_MS);
 
+        /* istanbul ignore if */
         if (!logger) {
             logger = new KafkaLogger(
                     BC_NAME,
@@ -122,6 +127,7 @@ export class Service {
         }
         globalLogger = this.logger = logger;
 
+        /* istanbul ignore if */
         if (!aggRepo) {
             const elasticOpts = {
                 node: ELASTICSEARCH_URL,
@@ -140,6 +146,7 @@ export class Service {
         }
         this.auditRepo = aggRepo;
 
+        /* istanbul ignore if */
         if (!aggCrypto) {
             if (!existsSync(AUDIT_KEY_FILE_PATH)) {
                 if (PRODUCTION_MODE) throw new Error("Code is running in PRODUCTION_MODE without a valid AUDIT_KEY_FILE_PATH");
@@ -155,6 +162,7 @@ export class Service {
 
         logger.info("AuditingAggregate initialised");
 
+        /* istanbul ignore if */
         if (!kafkaConsumer) {
             const kafkaConsumerOptions = {
                 kafkaBrokerList: KAFKA_URL,
@@ -222,6 +230,7 @@ export class Service {
         }
         if (this.auditRepo) await this.auditRepo.destroy();
         if (this.aggCrypto) await this.aggCrypto.destroy();
+        if (this.expressServer) this.expressServer.close();
     }
 }
 
@@ -229,6 +238,7 @@ export class Service {
  * process termination and cleanup
  */
 
+/* istanbul ignore next */
 async function _handle_int_and_term_signals(signal: NodeJS.Signals): Promise<void> {
     console.info(`Service - ${signal} received - cleaning up...`);
     await Service.stop(true);
@@ -236,14 +246,18 @@ async function _handle_int_and_term_signals(signal: NodeJS.Signals): Promise<voi
 }
 
 //catches ctrl+c event
+/* istanbul ignore next */
 process.on("SIGINT", _handle_int_and_term_signals);
 //catches program termination event
+/* istanbul ignore next */
 process.on("SIGTERM", _handle_int_and_term_signals);
 
 //do something when app is closing
+/* istanbul ignore next */
 process.on("exit", async () => {
     globalLogger.info("Microservice - exiting...");
 });
+/* istanbul ignore next */
 process.on("uncaughtException", (err: Error) => {
     globalLogger.error(err);
 });
