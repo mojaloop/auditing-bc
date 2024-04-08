@@ -136,6 +136,11 @@ jobs:
       - attach_workspace:
           at: *workingDirVar
       - run:
+          name: Install docker
+          command: |
+            apk update
+            apk add docker
+      - run:
           name: Wait for Docker services to be ready
           command: |
             echo "Waiting for Elasticsearch to be ready..."
