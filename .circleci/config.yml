@@ -183,7 +183,6 @@ jobs:
             ./infra.sh
             cd $SAVED_DIR
             sleep 10
-            docker ps
             npm run test:integration
       # store workspace for the coverage-report step
       - persist_to_workspace:

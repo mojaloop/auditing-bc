@@ -182,26 +182,6 @@ services:
       echo -e '\nCreating kafka topics:'
       kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic audits
       kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic logs
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic AccountLookupBcEvents
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic AccountLookupBcRequests
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic AccountLookupBcResponses
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic AccountLookupBcErrors
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic OperatorBcErrors
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic QuotingBcEvents
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic QuotingBcRequests
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic QuotingBcErrors
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SettlementsBcEvents
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SettlementsBcCommands
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic TransfersBcEvents
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic TransfersBcRequests
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic TransfersBcErrors
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic TransfersBcTimeouts
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic PlatformConfigurationBcEvents
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic ParticipantsBcEvents
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SchedulingBcCommands
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SchedulingBcEvents
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SecurityBcAuthorizationEvents
-      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SecurityBcEvents
       echo -e '\nSuccessfully created the following topics:'
       kafka-topics --bootstrap-server kafka:19092 --list
       "
@@ -213,17 +193,6 @@ services:
       - REDIS_ARGS="--save 60 1000 --appendonly yes"
     ports:
       - 6379:6379
-
-  redpanda-console:
-    depends_on:
-      kafka:
-        condition: service_healthy
-    image: docker.redpanda.com/vectorized/console
-    restart: unless-stopped
-    environment:
-      - KAFKA_BROKERS=kafka:19092
-    ports:
-      - 8080:8080
 
   mongo:
     image: mongo
@@ -240,72 +209,6 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-
-  mongo-express:
-    depends_on:
-      mongo:
-        condition: service_healthy
-    image: mongo-express
-    restart: unless-stopped
-#    network:
-#      - host
-    ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/
-      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
-
-  prometheus:
-    image: prom/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    ports:
-      - 9090:9090
-    restart: unless-stopped
-    volumes:
-      - prometheus_etc_vol:/etc/prometheus
-      - prometheus_data_vol:/prometheus
-  grafana:
-    image: grafana/grafana
-    ports:
-      - 3000:3000
-    restart: unless-stopped
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
-    volumes:
-      - grafana_data_vol:/etc/grafana/provisioning/datasources
-
-#  tigerbeetle-setup:
-#    image: ghcr.io/tigerbeetle/tigerbeetle
-#    command: "format --cluster=0 --replica=0 --replica-count=1 /data/0_0.tigerbeetle"
-#    mem_limit: ${TB_MEM_LIMIT}
-#    cap_add:
-#      - IPC_LOCK
-#    volumes:
-#      - tigerbeetle_data_vol:/data
-#
-#  tigerbeetle:
-#    image: ghcr.io/tigerbeetle/tigerbeetle
-#    command: "start --addresses=0.0.0.0:9001 /data/0_0.tigerbeetle"
-#    restart: unless-stopped
-#    mem_limit: ${TB_MEM_LIMIT}
-##    depends_on:
-##      - tigerbeetle-setup
-#    cap_add:
-#      - IPC_LOCK
-#    volumes:
-#      - tigerbeetle_data_vol:/data
-#    ports:
-#      - 9001:9001
-#    healthcheck:
-#      test: ["CMD", "/tigerbeetle", "version"]
-#      timeout: 20s
-#      retries: 10
-#      start_period: 40s
-#      interval: 30s
 
 volumes:
   certs_vol:
@@ -338,21 +241,3 @@ volumes:
       o: bind
       type: none
       device: ${ROOT_VOLUME_DEVICE_PATH}/mongodb_data
-  prometheus_etc_vol:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ${ROOT_VOLUME_DEVICE_PATH}/prometheus_etc
-  prometheus_data_vol:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ${ROOT_VOLUME_DEVICE_PATH}/prometheus_data
-  grafana_data_vol:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ${ROOT_VOLUME_DEVICE_PATH}/grafana_data
