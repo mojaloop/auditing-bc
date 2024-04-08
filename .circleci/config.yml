@@ -53,6 +53,7 @@ executors:
 
       - image: confluentinc/cp-kafka:7.2.1
         environment:
+          KAFKA_ADVERTISED_LISTENERS: INTERNAL://127.0.0.1:19092,EXTERNAL://127.0.0.1:9092,DOCKER://host.docker.internal:29092
           KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
           KAFKA_ZOOKEEPER_CONNECT: "127.0.0.1:2181" # is this correct?
 
