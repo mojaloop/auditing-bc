@@ -40,6 +40,11 @@ executors:
     docker:
       - image: mojaloop/node-20.10.0-builder:0.0.2
 
+  default-infra-docker:
+    working_directory: &workingDirVar /home/circleci/project
+    docker:
+      - image: mojaloop/node-20.10.0-builder:0.0.2
+
       # Infra docker images for the executor
       - image: elasticsearch:8.1.0
         environment:
@@ -115,7 +120,7 @@ jobs:
             - .
 
   test-integration:
-    executor: default-docker
+    executor: default-infra-docker
     steps:
       - attach_workspace:
           at: *workingDirVar
