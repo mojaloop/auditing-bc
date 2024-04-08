@@ -1,0 +1,358 @@
+version: "3.8"
+
+services:
+  setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ES_STACK_VERSION}
+    volumes:
+      - certs_vol:/usr/share/elasticsearch/config/certs
+    user: "0"
+    command: >
+      bash -c '
+        if [ x$$ELASTIC_PASSWORD == x ]; then
+          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+          exit 1;
+        elif [ x$$KIBANA_PASSWORD == x ]; then
+          echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+          exit 1;
+        fi;
+        if [ ! -f certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f certs/certs.zip ]; then
+          echo "Creating certs";
+          echo -ne \
+          "instances:\n"\
+          "  - name: es01\n"\
+          "    dns:\n"\
+          "      - es01\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
+        echo "Setting file permissions"
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        echo "Waiting for Elasticsearch availability";
+        until curl -s --cacert config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        echo "Setting kibana_system password";
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u elastic:$$ELASTIC_PASSWORD -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"$$KIBANA_PASSWORD\"}" | grep -q "^{}"; do sleep 10; done;
+        echo "All done!";
+      '
+    environment:
+      - ELASTIC_PASSWORD=${ES_ELASTIC_PASSWORD}
+      - KIBANA_PASSWORD=${ES_KIBANA_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+
+  es01:
+    depends_on:
+      setup:
+        condition: service_healthy
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ES_STACK_VERSION}
+    restart: unless-stopped
+    volumes:
+      - certs_vol:/usr/share/elasticsearch/config/certs
+      - esdata01_vol:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    environment:
+      - node.name=es01
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ES_ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/es01/es01.key
+      - xpack.security.http.ssl.certificate=certs/es01/es01.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.http.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/es01/es01.key
+      - xpack.security.transport.ssl.certificate=certs/es01/es01.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${ES_LICENSE}
+      - cluster.routing.allocation.disk.watermark.low=30mb
+      - cluster.routing.allocation.disk.watermark.high=20mb
+      - cluster.routing.allocation.disk.watermark.flood_stage=10mb
+    mem_limit: ${ES_MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  kibana:
+    depends_on:
+      es01:
+        condition: service_healthy
+    image: docker.elastic.co/kibana/kibana:${ES_STACK_VERSION}
+    restart: unless-stopped
+    volumes:
+      - certs_vol:/usr/share/kibana/config/certs
+      - kibana_vol:/usr/share/kibana/data
+    ports:
+      - ${ES_KIBANA_PORT}:5601
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=https://es01:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${ES_KIBANA_PASSWORD}
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+    mem_limit: ${ES_MEM_LIMIT}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  zoo:
+    image: confluentinc/cp-zookeeper:7.2.1
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_SERVERS: zoo:2888:3888
+
+  kafka:
+    image: confluentinc/cp-kafka:7.2.1
+    depends_on:
+      - zoo
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+      - "9999:9999"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19092,EXTERNAL://${KAFKA_ADVERTISED_HOST}:9092,DOCKER://host.docker.internal:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zoo:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+      KAFKA_NUM_PARTITIONS: 4
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
+      start_period: 30s
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  init-kafka:
+    image: confluentinc/cp-kafka:7.2.1
+    depends_on:
+      - kafka
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      echo -e 'Existing kafka topics:'
+      kafka-topics --bootstrap-server kafka:19092 --list
+      echo -e '\nCreating kafka topics:'
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic audits
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic logs
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic AccountLookupBcEvents
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic AccountLookupBcRequests
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic AccountLookupBcResponses
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic AccountLookupBcErrors
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic OperatorBcErrors
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic QuotingBcEvents
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic QuotingBcRequests
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic QuotingBcErrors
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SettlementsBcEvents
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SettlementsBcCommands
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic TransfersBcEvents
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic TransfersBcRequests
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic TransfersBcErrors
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic TransfersBcTimeouts
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic PlatformConfigurationBcEvents
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic ParticipantsBcEvents
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SchedulingBcCommands
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SchedulingBcEvents
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SecurityBcAuthorizationEvents
+      kafka-topics --bootstrap-server kafka:19092 --create --if-not-exists --topic SecurityBcEvents
+      echo -e '\nSuccessfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:19092 --list
+      "
+
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    environment:
+      - REDIS_ARGS="--save 60 1000 --appendonly yes"
+    ports:
+      - 6379:6379
+
+  redpanda-console:
+    depends_on:
+      kafka:
+        condition: service_healthy
+    image: docker.redpanda.com/vectorized/console
+    restart: unless-stopped
+    environment:
+      - KAFKA_BROKERS=kafka:19092
+    ports:
+      - 8080:8080
+
+  mongo:
+    image: mongo
+    restart: unless-stopped
+    volumes:
+      - mongodb_data_vol:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  mongo-express:
+    depends_on:
+      mongo:
+        condition: service_healthy
+    image: mongo-express
+    restart: unless-stopped
+#    network:
+#      - host
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+
+  prometheus:
+    image: prom/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - prometheus_etc_vol:/etc/prometheus
+      - prometheus_data_vol:/prometheus
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - grafana_data_vol:/etc/grafana/provisioning/datasources
+
+#  tigerbeetle-setup:
+#    image: ghcr.io/tigerbeetle/tigerbeetle
+#    command: "format --cluster=0 --replica=0 --replica-count=1 /data/0_0.tigerbeetle"
+#    mem_limit: ${TB_MEM_LIMIT}
+#    cap_add:
+#      - IPC_LOCK
+#    volumes:
+#      - tigerbeetle_data_vol:/data
+#
+#  tigerbeetle:
+#    image: ghcr.io/tigerbeetle/tigerbeetle
+#    command: "start --addresses=0.0.0.0:9001 /data/0_0.tigerbeetle"
+#    restart: unless-stopped
+#    mem_limit: ${TB_MEM_LIMIT}
+##    depends_on:
+##      - tigerbeetle-setup
+#    cap_add:
+#      - IPC_LOCK
+#    volumes:
+#      - tigerbeetle_data_vol:/data
+#    ports:
+#      - 9001:9001
+#    healthcheck:
+#      test: ["CMD", "/tigerbeetle", "version"]
+#      timeout: 20s
+#      retries: 10
+#      start_period: 40s
+#      interval: 30s
+
+volumes:
+  certs_vol:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${ROOT_VOLUME_DEVICE_PATH}/certs
+  esdata01_vol:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${ROOT_VOLUME_DEVICE_PATH}/esdata01
+  kibana_vol:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${ROOT_VOLUME_DEVICE_PATH}/kibanadata
+  tigerbeetle_data_vol:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${ROOT_VOLUME_DEVICE_PATH}/tigerbeetle_data
+  mongodb_data_vol:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${ROOT_VOLUME_DEVICE_PATH}/mongodb_data
+  prometheus_etc_vol:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${ROOT_VOLUME_DEVICE_PATH}/prometheus_etc
+  prometheus_data_vol:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${ROOT_VOLUME_DEVICE_PATH}/prometheus_data
+  grafana_data_vol:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ${ROOT_VOLUME_DEVICE_PATH}/grafana_data

@@ -29,6 +29,65 @@ defaults_npm_auth: &defaults_npm_auth
   name: Update NPM registry auth token
   command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
 
+## Default 'default-machine' executor dependencies
+defaults_machine_Dependencies: &defaults_machine_Dependencies |
+  ## Add Package Repos
+  ## Ref: https://docs.confluent.io/platform/current/installation/installing_cp/deb-ubuntu.html#get-the-software
+  wget -qO - https://packages.confluent.io/deb/7.4/archive.key | sudo apt-key add -
+  sudo add-apt-repository -y "deb https://packages.confluent.io/clients/deb $(lsb_release -cs) main"
+
+  ## Install deps
+  sudo apt install -y librdkafka-dev curl bash musl-dev libsasl2-dev
+  sudo ln -s /usr/lib/x86_64-linux-musl/libc.so /lib/libc.musl-x86_64.so.1
+
+defaults_configure_nvm: &defaults_configure_nvm |
+    cd $HOME
+    export ENV_DOT_PROFILE=$HOME/.profile
+    touch $ENV_DOT_PROFILE
+    echo "1. Check/Set NVM_DIR env variable"
+    if [ -z "$NVM_DIR" ]; then
+      export NVM_DIR="$HOME/.nvm"
+      echo "==> NVM_DIR has been exported - $NVM_DIR"
+    else
+      echo "==> NVM_DIR already exists - $NVM_DIR"
+    fi
+    echo "2. Check/Set NVMRC_VERSION env variable"
+    if [ -z "$NVMRC_VERSION" ]; then
+      echo "==> Configuring NVMRC_VERSION!"
+      export NVMRC_VERSION=$(cat $CIRCLE_WORKING_DIRECTORY/.nvmrc)
+      echo "export NVMRC_VERSION=$NVMRC_VERSION" >> $ENV_DOT_PROFILE
+    fi
+    echo "3. Configure NVM"
+    ## Lets check if an existing NVM_DIR exists, if it does lets skil
+    if [ -e "$NVM_DIR" ]; then
+      echo "==> $NVM_DIR exists. Skipping steps 3!"
+      # echo "5. Executing $NVM_DIR/nvm.sh"
+      # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    else
+      echo "==> $NVM_DIR does not exists. Executing steps 4-5!"
+      echo "4. Installing NVM"
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+      echo "5. Executing $NVM_DIR/nvm.sh"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    fi
+    ## Ref: https://github.com/nvm-sh/nvm/issues/1102#issuecomment-550572252
+    if [ ! -z "$NVM_ARCH_UNOFFICIAL_OVERRIDE" ]; then
+      echo "==> Handle NVM_ARCH_UNOFFICIAL_OVERRIDE=$NVM_ARCH_UNOFFICIAL_OVERRIDE!"
+      echo "nvm_get_arch() { nvm_echo \"${NVM_ARCH_UNOFFICIAL_OVERRIDE}\"; }" >> $ENV_DOT_PROFILE
+      echo "export NVM_NODEJS_ORG_MIRROR=https://unofficial-builds.nodejs.org/download/release" >> $ENV_DOT_PROFILE
+      source $ENV_DOT_PROFILE
+    fi
+    echo "6. Setup Node version"
+    if [ -n "$NVMRC_VERSION" ]; then
+      echo "==> Installing Node version: $NVMRC_VERSION"
+      nvm install $NVMRC_VERSION
+      nvm alias default $NVMRC_VERSION
+      nvm use $NVMRC_VERSION
+      cd $CIRCLE_WORKING_DIRECTORY
+    else
+      echo "==> ERROR - NVMRC_VERSION has not been set! - NVMRC_VERSION: $NVMRC_VERSION"
+      exit 1
+    fi
 ##
 # Executors
 #
@@ -40,45 +99,8 @@ executors:
     docker:
       - image: mojaloop/node-20.10.0-builder:0.0.2
 
-  default-infra-docker:
-    working_directory: &workingDirVar /home/circleci/project
-    environment:
-      ELASTICSEARCH_URL: http://localhost:9200 # non-SSL
-
-    docker:
-      - image: mojaloop/node-20.10.0-builder:0.0.2
-
-      # Infra docker images for the executor
-      - image: elasticsearch:8.1.0
-        name: elasticsearch
-        environment:
-          ES_ELASTIC_PASSWORD: elasticSearchPas42
-          discovery.type: single-node
-          xpack.security.enabled: false
-      - image: confluentinc/cp-zookeeper:7.2.1
-        name: zookeeper
-        environment:
-          ZOOKEEPER_CLIENT_PORT: 2181
-          ZOOKEEPER_SERVER_ID: 1
-          ZOOKEEPER_SERVERS: 127.0.0.1:2888:3888
-
-      - image: confluentinc/cp-kafka:7.2.1
-        name: kafka
-        environment:
-          KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19092,EXTERNAL://0.0.0.0:9092
-          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-          KAFKA_BROKER_ID: 1
-          KAFKA_JMX_PORT: 9999
-          KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
-          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-          KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
-          KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
-          KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
-          KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-          KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181" # is this correct?
-
   default-machine:
+    working_directory: *workingDirVar
     machine:
       image: ubuntu-2204:2023.04.2
       docker_layer_caching: true
@@ -145,28 +167,18 @@ jobs:
       #     command: |
       #       apk update
       #       apk add curl
-      # - run:
-      #     name: Wait for Docker services to be ready
-      #     command: |
-      #       echo "Waiting for Elasticsearch to be ready..."
-      #       until curl -s http://localhost:9200/_cluster/health?pretty=true | grep -q 'green'; do
-      #         echo "Elasticsearch is not ready yet..."
-      #         sleep 5
-      #       done
-      #       echo "Elasticsearch is ready."
       #
-      #       echo "Checking if Kafka is ready..."
-      #       # Simple shell TCP connection attempt to Kafka's port
-      #       until timeout 1 bash -c "cat < /dev/null > /dev/tcp/localhost/9092"; do
-      #         echo "Waiting for Kafka..."
-      #         sleep 5
-      #       done
-      #       echo "Kafka is ready."
-      #
-      #       echo "All services are ready, proceeding with integration tests."
+      - run:
+          name: Install general dependencies
+          command: *defaults_machine_Dependencies
+      - run:
+          name: Configure NVM
+          command: *defaults_configure_nvm
       - run:
           name: Execute integration tests
-          command: npm run test:integration
+          command: |
+            ./test/scripts/docker-compose-infra/infra.sh
+            npm run test:integration
       # store workspace for the coverage-report step
       - persist_to_workspace:
           root: *workingDirVar
@@ -236,6 +248,7 @@ workflows:
           context: org-global
           requires:
             - test-unit
+            - test-integration
       - publish:
           context: org-global
           filters:
