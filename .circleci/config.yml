@@ -190,7 +190,7 @@ jobs:
             # clean up infra data
             cd ./test/scripts/docker-compose-infra
             docker compose -f ./docker-compose-infra.yml --env-file ./exec/.env down -v --rmi all
-            rm -rf ./exec
+            sudo rm -rf ./exec
 
       # store workspace for the coverage-report step
       - persist_to_workspace:
