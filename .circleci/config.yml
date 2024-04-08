@@ -158,7 +158,7 @@ jobs:
             - .
 
   test-integration:
-    executor: default-infra-docker
+    executor: default-machine
     steps:
       - attach_workspace:
           at: *workingDirVar
