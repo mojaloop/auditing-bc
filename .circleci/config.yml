@@ -174,10 +174,16 @@ jobs:
       - run:
           name: Configure NVM
           command: *defaults_configure_nvm
+      - run: BUILD_LIBRDKAFKA=0 npm install
       - run:
-          name: Execute integration tests
+          name: Run Infra and Execute integration tests
           command: |
-            ./test/scripts/docker-compose-infra/infra.sh
+            SAVED_DIR=$(pwd)
+            cd ./test/scripts/docker-compose-infra
+            ./infra.sh
+            cd $SAVED_DIR
+            sleep 10
+            docker ps
             npm run test:integration
       # store workspace for the coverage-report step
       - persist_to_workspace:
