@@ -94,6 +94,7 @@ export class AuditAggregateCryptoProvider implements IAuditAggregateCryptoProvid
         return verified;
     }
 
+    /* istanbul ignore next */
     static createRsaPrivateKeyFileSync(filePath:string, modulusLength = 2048):void{
         const keyOptions = {
             modulusLength: modulusLength,

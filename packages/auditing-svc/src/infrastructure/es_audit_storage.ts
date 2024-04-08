@@ -232,7 +232,7 @@ export class ElasticsearchAuditStorage implements IAuditRepo {
                 }
 
             }
-        } catch (err) {
+        } catch (err)/* istanbul ignore next */ {
             this._logger.error(err);
         }
 

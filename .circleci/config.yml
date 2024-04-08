@@ -1,6 +1,17 @@
 # CircleCI v2.1 Config
 version: 2.1
 
+##
+# orbs
+#
+# Orbs used in this pipeline
+##
+orbs:
+  anchore: anchore/anchore-engine@1.9.0
+  slack: circleci/slack@4.12.5 # Ref: https://github.com/mojaloop/ci-config/tree/main/slack-templates
+  pr-tools: mojaloop/pr-tools@0.1.10 # Ref: https://github.com/mojaloop/ci-config/
+  gh: circleci/github-cli@2.2.0
+
 # this allows you to use CircleCI's dynamic configuration feature
 #setup: true
 
@@ -26,8 +37,26 @@ defaults_npm_auth: &defaults_npm_auth
 executors:
   default-docker:
     working_directory: &workingDirVar /home/circleci/project
+    docker_layer_caching: true
     docker:
       - image: mojaloop/node-20.10.0-builder:0.0.2
+
+      # Infra docker images for the executor
+      - image: elasticsearch:8.1.0
+        environment:
+          ES_ELASTIC_PASSWORD: elasticSearchPas42
+
+      - image: confluentinc/cp-zookeeper:7.2.1
+        environment:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_SERVER_ID: 1
+          ZOOKEEPER_SERVERS: 127.0.0.1:2888:3888
+
+      - image: confluentinc/cp-kafka:7.2.1
+        environment:
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+          KAFKA_ZOOKEEPER_CONNECT: "127.0.0.1:2181" # is this correct?
+
   default-machine:
     machine:
       image: ubuntu-2204:2023.04.2
@@ -79,6 +108,20 @@ jobs:
       - run:
           name: Execute unit tests
           command: npm run test:unit
+      # store workspace for the coverage-report step
+      - persist_to_workspace:
+          root: *workingDirVar
+          paths:
+            - .
+
+  test-integration:
+    executor: default-docker
+    steps:
+      - attach_workspace:
+          at: *workingDirVar
+      - run:
+          name: Execute integration tests
+          command: npm run test:integration
       # store workspace for the coverage-report step
       - persist_to_workspace:
           root: *workingDirVar
@@ -137,6 +180,10 @@ workflows:
           requires:
             - build
       - test-unit:
+          context: org-global
+          requires:
+            - lint
+      - test-integration:
           context: org-global
           requires:
             - lint
