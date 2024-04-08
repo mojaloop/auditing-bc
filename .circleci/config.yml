@@ -37,7 +37,6 @@ defaults_npm_auth: &defaults_npm_auth
 executors:
   default-docker:
     working_directory: &workingDirVar /home/circleci/project
-    docker_layer_caching: true
     docker:
       - image: mojaloop/node-20.10.0-builder:0.0.2
 
