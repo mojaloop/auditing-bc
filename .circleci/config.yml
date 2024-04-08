@@ -256,11 +256,10 @@ workflows:
       - test-integration:
           context: org-global
           requires:
-            - lint
+            - test-unit
       - coverage-report:
           context: org-global
           requires:
-            - test-unit
             - test-integration
       - publish:
           context: org-global
