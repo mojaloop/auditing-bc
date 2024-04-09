@@ -185,31 +185,6 @@ services:
       echo -e '\nSuccessfully created the following topics:'
       kafka-topics --bootstrap-server kafka:19092 --list
       "
-
-  redis:
-    image: redis:latest
-    restart: unless-stopped
-    environment:
-      - REDIS_ARGS="--save 60 1000 --appendonly yes"
-    ports:
-      - 6379:6379
-
-  mongo:
-    image: mongo
-    restart: unless-stopped
-    volumes:
-      - mongodb_data_vol:/data/db
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-    ports:
-      - 27017:27017
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
-      timeout: 10s
-      retries: 5
-
 volumes:
   certs_vol:
     driver: local
@@ -229,15 +204,3 @@ volumes:
       o: bind
       type: none
       device: ${ROOT_VOLUME_DEVICE_PATH}/kibanadata
-  tigerbeetle_data_vol:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ${ROOT_VOLUME_DEVICE_PATH}/tigerbeetle_data
-  mongodb_data_vol:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ${ROOT_VOLUME_DEVICE_PATH}/mongodb_data
