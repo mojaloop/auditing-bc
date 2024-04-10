@@ -2,17 +2,40 @@
 
 **EXPERIMENTAL** vNext Auditing Bounded Context Mono Repository
 
-{{DESCRIPTION}}
+The Auditing BC is responsible for maintaining an immutable record of all of the transactions that take place on the Switch.
 
-## Modules
+See the Reference Architecture documentation [Auditing Section](https://mojaloop.github.io/reference-architecture-doc/boundedContexts/auditing/) for context on this vNext implementation guidelines.  
 
-### auditing-types-lib
-### auditing-client-lib
+## Contents
+- [auditing-bc](#auditing-bc)
+  - [Contents](#contents)
+  - [Packages](#packages)
+  - [Running Locally](#running-locally)
+  - [Viewing the dashboards](#viewing-the-dashboards)
+  - [Setup ElasticSearch Mappings](#setup-elasticsearch-mappings)
+  - [Configuration](#configuration)
+  - [Tests](#tests)
+  - [Auditing Dependencies](#auditing-dependencies)
+  - [CI/CD](#cicd-pipelines)
+  - [Documentation](#documentation)
+  - [Troubleshoot](#troubleshoot)
 
-{{DESCRIPTION}}
+## Packages
+The Auditing BC consists of the following packages;
 
-[README](packages/public-types-lib/README.md)
-[README](packages/client-lib/README.md)
+`auditing-svc`
+Auditing Service.
+[README](./packages/auditing-svc/README.md)
+
+`client-lib`
+Auditing BC Client Library.
+[README](./packages/client-lib/README.md)
+
+`public-types-lib`
+Auditing BC Public Types Library.
+[README](./packages/public-types-lib/README.md)
+
+## Running Locally
 
 #### Run
 
@@ -20,9 +43,9 @@
 npm run start:auditing-svc
 ```
 
-## Usage
+### Usage
 
-### Install Node version
+#### Install Node version
 
 More information on how to install NVM: https://github.com/nvm-sh/nvm
 
@@ -31,27 +54,21 @@ nvm install
 nvm use
 ```
 
-### Install Dependencies
+#### Install Dependencies
 
 ```bash
 npm install
 ```
 
-## Build
+#### Build
 
 ```bash
 npm run build
 ```
 
-## Unit Tests
+### Run the services
 
-```bash
-npm run test:unit
-```
-
-## Run the services
-
-### Startup supporting services
+#### Startup supporting services
 
 Use https://github.com/mojaloop/platform-shared-tools/tree/main/packages/deployment/docker-compose-infra
 
@@ -88,7 +105,7 @@ cp ../.env.sample ./.env
 sysctl -w vm.max_map_count=262144 # might require sudo
 ```
 
-### Start Infrastructure Containers
+#### Start Infrastructure Containers
 
 Start the docker containers using docker-compose up (in the exec dir)
 ```shell
@@ -106,7 +123,7 @@ To stop the infrastructure containers, run:
 docker-compose -f ../docker-compose-infra.yml --env-file ./.env stop
 ```
 
-# Viewing the dashboards
+## Viewing the dashboards
 
 Once started, the services will available via localhost.
 Use the credentials set in the .env file.
@@ -128,7 +145,7 @@ Use the credentials set in the .env file.
 
 ---
 
-# Setup ElasticSearch Mappings
+## Setup ElasticSearch Mappings
 
 Once ElasticSearch has started you should upload the data mappings for the logs and audits indexes using the following commands.
 
@@ -177,7 +194,7 @@ Go to **(top left burger icon) -> Analytics / Discover**, and then use the Open 
 
 Go to **(top left burger icon) -> Analytics / Discover**, and then use the Open option on the top right to open the imported `"MojaloopDefaultLogView"` view.
 
-# Additional information
+## Additional information
 
 ### Useful Commands
 
@@ -197,10 +214,91 @@ docker-compose down -v
 npm run start:auditing-svc
 ```
 
-## Integration Tests
+## Configuration
+
+See the README.md file on each services for more Environment Variable Configuration options.
+
+## Tests
+
+### Unit Tests
+
 ```bash
+npm run test:unit
+```
+
+### Run Integration Tests
+
+```shell
 npm run test:integration
 ```
+
+### Run all tests at once
+Requires integration tests pre-requisites
+```shell
+npm run test
+```
+
+## Collect coverage (from both unit and integration test types)
+
+After running the unit and/or integration tests: 
+
+```shell
+npm run posttest
+```
+
+You can then consult the html report in:
+
+```shell
+coverage/lcov-report/index.html
+```
+
+## Auditing Dependencies
+We use npm audit to check dependencies for node vulnerabilities. 
+
+To start a new resolution process, run:
+```
+npm run audit:fix
+``` 
+
+You can check to see if the CI will pass based on the current dependencies with:
+
+```
+npm run audit:check
+```
+
+## CI/CD Pipelines
+
+### Execute locally the pre-commit checks - these will be executed with every commit and in the default CI/CD pipeline 
+
+Make sure these pass before committing any code
+```
+npm run pre_commit_check
+```
+
+### Work Flow 
+
+ As part of our CI/CD process, we use CircleCI. The CircleCI workflow automates the process of publishing changed packages to the npm registry and building Docker images for select packages before publishing them to DockerHub. It also handles versioning, tagging commits, and pushing changes back to the repository.
+
+The process includes five phases. 
+1. Setup : This phase initializes the environment, loads common functions, and retrieves commits and git change history since the last successful CI build.
+
+2. Detecting Changed Package.
+
+3. Publishing Changed Packages to NPM.
+
+4. Building Docker Images and Publishing to DockerHub.
+
+5. Pushing Commits to Git.
+
+ All code is automatically linted, built, and unit tested by CircleCI pipelines, where unit test results are kept for all runs. All libraries are automatically published to npm.js, and all Docker images are published to Docker Hub.
+
+ ## Documentation
+The following documentation provides insight into the FSP Interoperability API Bounded Context.
+
+- **Reference Architecture** - https://mojaloop.github.io/reference-architecture-doc/boundedContexts/auditing/
+- **MIRO Board** - https://miro.com/app/board/o9J_lJyA1TA=/
+- **Work Sessions** - https://docs.google.com/document/d/1Nm6B_tSR1mOM0LEzxZ9uQnGwXkruBeYB2slgYK1Kflo/edit#heading=h.6w64vxvw6er4
+
 
 ## Troubleshoot
 
