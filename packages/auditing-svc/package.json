@@ -42,12 +42,12 @@
     "dependencies": {
         "@mojaloop/auditing-bc-public-types-lib": "*",
         "@elastic/elasticsearch": "^8.10.0",
-        "@mojaloop/logging-bc-client-lib": "~0.5.2",
-        "@mojaloop/logging-bc-public-types-lib": "~0.5.2",
-        "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "~0.5.1",
-        "@mojaloop/platform-shared-lib-messaging-types-lib": "~0.5.2",
-        "@mojaloop/security-bc-client-lib": "~0.5.0",
-        "@mojaloop/security-bc-public-types-lib": "~0.5.0",
+        "@mojaloop/logging-bc-client-lib": "~0.5.7",
+        "@mojaloop/logging-bc-public-types-lib": "~0.5.4",
+        "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib": "~0.5.18",
+        "@mojaloop/platform-shared-lib-messaging-types-lib": "~0.6.2",
+        "@mojaloop/security-bc-client-lib": "~0.5.11",
+        "@mojaloop/security-bc-public-types-lib": "~0.5.6",
         "express": "^4.18.2"
     },
     "devDependencies": {

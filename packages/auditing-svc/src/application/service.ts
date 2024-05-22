@@ -41,7 +41,8 @@ import express, {Express} from "express";
 import {Server} from "net";
 import {ILogger, LogLevel} from "@mojaloop/logging-bc-public-types-lib";
 import {
-    MLKafkaRawConsumer,
+    MLKafkaJsonProducerOptions,
+    MLKafkaRawConsumer, MLKafkaRawConsumerOptions,
     MLKafkaRawConsumerOutputType
 } from "@mojaloop/platform-shared-lib-nodejs-kafka-client-lib";
 import {KafkaLogger} from "@mojaloop/logging-bc-client-lib";
@@ -72,6 +73,11 @@ const ELASTICSEARCH_USERNAME =  process.env["ELASTICSEARCH_USERNAME"] || "elasti
 const ELASTICSEARCH_PASSWORD =  process.env["ELASTICSEARCH_PASSWORD"] ||  "elasticSearchPas42";
 
 const KAFKA_URL = process.env["KAFKA_URL"] || "localhost:9092";
+const KAFKA_AUTH_ENABLED = process.env["KAFKA_AUTH_ENABLED"] && process.env["KAFKA_AUTH_ENABLED"].toUpperCase()==="TRUE" || false;
+const KAFKA_AUTH_PROTOCOL = process.env["KAFKA_AUTH_PROTOCOL"] || "sasl_plaintext";
+const KAFKA_AUTH_MECHANISM = process.env["KAFKA_AUTH_MECHANISM"] || "plain";
+const KAFKA_AUTH_USERNAME = process.env["KAFKA_AUTH_USERNAME"] || "user";
+const KAFKA_AUTH_PASSWORD = process.env["KAFKA_AUTH_PASSWORD"] || "password";
 
 const CONSUMER_BATCH_SIZE = (process.env["CONSUMER_BATCH_SIZE"] && parseInt(process.env["CONSUMER_BATCH_SIZE"])) || 100;
 const CONSUMER_BATCH_TIMEOUT_MS = (process.env["CONSUMER_BATCH_TIMEOUT_MS"] && parseInt(process.env["CONSUMER_BATCH_TIMEOUT_MS"])) || 1000;
@@ -79,9 +85,18 @@ const CONSUMER_BATCH_TIMEOUT_MS = (process.env["CONSUMER_BATCH_TIMEOUT_MS"] && p
 const AUDIT_KEY_FILE_PATH = process.env["AUDIT_KEY_FILE_PATH"] || "/app/data/audit_private_key.pem";
 const SVC_DEFAULT_HTTP_PORT = process.env["SVC_DEFAULT_HTTP_PORT"] || 3050;
 
-const kafkaProducerOptions = {
+const kafkaProducerOptions:MLKafkaJsonProducerOptions = {
     kafkaBrokerList: KAFKA_URL
 };
+
+if(KAFKA_AUTH_ENABLED){
+    kafkaProducerOptions.authentication = {
+        protocol: KAFKA_AUTH_PROTOCOL as "plaintext" | "ssl" | "sasl_plaintext" | "sasl_ssl",
+        mechanism: KAFKA_AUTH_MECHANISM as "PLAIN" | "GSSAPI" | "SCRAM-SHA-256" | "SCRAM-SHA-512",
+        username: KAFKA_AUTH_USERNAME,
+        password: KAFKA_AUTH_PASSWORD
+    };
+}
 
 let globalLogger: ILogger;
 
@@ -156,13 +171,21 @@ export class Service {
         logger.info("AuditingAggregate initialised");
 
         if (!kafkaConsumer) {
-            const kafkaConsumerOptions = {
+            const kafkaConsumerOptions:MLKafkaRawConsumerOptions = {
                 kafkaBrokerList: KAFKA_URL,
                 kafkaGroupId: `${BC_NAME}_${APP_NAME}`,
                 outputType: MLKafkaRawConsumerOutputType.Json,
                 batchSize: CONSUMER_BATCH_SIZE,
                 batchTimeoutMs: CONSUMER_BATCH_TIMEOUT_MS
             };
+            if(KAFKA_AUTH_ENABLED){
+                kafkaConsumerOptions.authentication = {
+                    protocol: KAFKA_AUTH_PROTOCOL as "plaintext" | "ssl" | "sasl_plaintext" | "sasl_ssl",
+                    mechanism: KAFKA_AUTH_MECHANISM as "PLAIN" | "GSSAPI" | "SCRAM-SHA-256" | "SCRAM-SHA-512",
+                    username: KAFKA_AUTH_USERNAME,
+                    password: KAFKA_AUTH_PASSWORD
+                };
+            }
             kafkaConsumer = new MLKafkaRawConsumer(kafkaConsumerOptions, logger.createChild("kafkaConsumer"));
         }
         this.kafkaConsumer = kafkaConsumer;
