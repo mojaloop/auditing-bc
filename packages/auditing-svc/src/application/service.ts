@@ -245,6 +245,10 @@ export class Service {
         }
         if (this.auditRepo) await this.auditRepo.destroy();
         if (this.aggCrypto) await this.aggCrypto.destroy();
+
+        if (this.expressServer) {
+            this.expressServer.close();
+        }
     }
 }
 
