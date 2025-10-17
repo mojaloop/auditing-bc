@@ -1,6 +1,6 @@
 # [DEPRECATED] auditing-bc
 
-Deprecation Notice Theis repo was deprecated as of 20th May 2025. It is no longer maintained, and is no longer referenced by any releases of Mojaloop.
+Deprecation Notice Theis repo was deprecated as of October 2025. It is no longer maintained, and is no longer referenced by any releases of Mojaloop.
 
 For a list of active Mojaloop repos, please refer to Mojaloop documentation or Mojaloop GitHub Org](https://github.com/mojaloop).
 
